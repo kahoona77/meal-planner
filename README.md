@@ -1,2 +1,4 @@
-# meal-planner
+meal-planner
+============
+
 A Family Meal-Planner

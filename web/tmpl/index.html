@@ -1,0 +1,42 @@
+{{ define "content"}}
+    <div class="planner">
+        <div class="planner-header">
+            <a class="icon big" href="offset/{{dec .Offset}}">
+                <svg>
+                    <use xlink:href="assets/img/solid.svg#chevron-left"></use>
+                </svg>
+            </a>
+
+            <div>
+                {{ .Start.Format "02.01.2006" }} - {{ .End.Format "02.01.2006" }}
+            </div>
+
+            <a class="icon big" href="offset/{{inc .Offset}}">
+                <svg>
+                    <use xlink:href="assets/img/solid.svg#chevron-right"></use>
+                </svg>
+            </a>
+        </div>
+
+        <div class="week">
+        {{ range .Meals }}
+            <div class="card card-1 meal {{if eq (isToday .Date) true}}current{{end}}">
+                <div class="day">
+                    <div>{{ .Date.Format "Mon" }}</div>
+                    <div>{{ .Date.Format "02.01." }}</div>
+                </div>
+                <div>
+                    {{.Meal.Name}}
+                </div>
+            </div>
+
+        {{end}}
+        </div>
+
+        <a href="servers" class="flab">
+            <svg>
+                <use xlink:href="assets/img/solid.svg#plus"></use>
+            </svg>
+        </a>
+    </div>
+{{end}}
