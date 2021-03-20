@@ -243,6 +243,11 @@ textarea {
     overflow: hidden;
 }
 
+.meals-edit trix-editor {
+    max-height: calc(100vh - 293px);
+    overflow-y: auto;
+}
+
 /* meal of day */
 
 .meal-of-day .date-header {

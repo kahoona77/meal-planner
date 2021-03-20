@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="assets/main.css" rel="stylesheet">
 {{/*    <script src="assets/index.js"></script>*/}}
+    {{ template "site-header" .}}
+
 </head>
 <body>
     <div>
@@ -40,4 +42,7 @@
     <div class="header">
         Meal Planner
     </div>
+{{end}}
+
+{{ define "site-header"}}
 {{end}}

@@ -2,10 +2,10 @@
     <div class="meals">
 
         {{ range .meals }}
-            <a href="meals/{{.Id}}" class="card card-1 meal">
-                    {{.Name}}
+            <a href="meals/{{ .Id }}" class="card card-1 meal">
+                {{ .Name }}
                 <div class="description">
-                    {{.Description}}
+                    {{ htmlSafe .Description }}
                 </div>
             </a>
         {{end}}

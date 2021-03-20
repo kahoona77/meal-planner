@@ -1,3 +1,7 @@
+{{ define "site-header"}}
+    <link rel="stylesheet" type="text/css" href="assets/trix.css">
+    <script type="text/javascript" src="assets/trix.js"></script>
+{{end}}
 {{ define "content"}}
     <div class="meals-edit">
         <form id="meal-delete" action="meals/{{.Id}}/delete" method="post" hidden></form>
@@ -8,7 +12,9 @@
             </div>
             <div class="control">
                 <label>Beschreibung</label>
-                <textarea name="description" rows="10">{{.Description}}</textarea>
+                <input id="x" type="hidden" name="description" value="{{.Description}}">
+                <trix-editor input="x"></trix-editor>
+
             </div>
         </form>
 
