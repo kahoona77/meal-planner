@@ -1,15 +1,13 @@
 package views
 
 import (
-	"github.com/labstack/echo/v4"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"meal-planner/planner"
 	"net/http"
 )
 
-func MealOfDay(c echo.Context) error {
-	ctx := c.(*core.WebContext)
+func MealOfDay(ctx *core.WebContext) error {
 	repo := planner.NewRepository(ctx)
 	mealsRepo := meals.NewRepository(ctx)
 
@@ -27,5 +25,5 @@ func MealOfDay(c echo.Context) error {
 		mealOfDay.Meal = meal
 	}
 
-	return c.Render(http.StatusOK, "meal-of-day.html", mealOfDay)
+	return ctx.Render(http.StatusOK, "meal-of-day.html", mealOfDay)
 }

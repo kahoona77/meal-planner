@@ -2,31 +2,20 @@ package main
 
 import (
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"meal-planner/planner"
-	"meal-planner/web"
 	"meal-planner/web/views"
 )
 
 func main() {
-	ctx := core.InitApp()
-	defer ctx.Close()
+	app := core.InitApp()
+	defer app.Ctx.Close()
 
-	meals.InitDb(ctx)
-	planner.InitDb(ctx)
+	meals.InitDb(app.Ctx)
+	planner.InitDb(app.Ctx)
 
-	e := echo.New()
-	e.Renderer = web.NewTemplate(ctx)
-	e.Debug = true
-	//e.Logger.SetLevel(log.DEBUG)
-	//e.Use(middleware.Logger())
-	e.Use(middleware.CORS())
-	e.Use(core.CreateCtx(ctx))
-
-	root := e.Group(ctx.Config().BasePath)
+	root := app.Group(app.Ctx.Config().BasePath)
 
 	root.Static("/assets", "./web/assets")
 
@@ -43,5 +32,5 @@ func main() {
 	root.POST("/meals/:id/delete", views.MealDelete)
 
 	// Listen and server on 0.0.0.0:8080
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", ctx.Config().Port)))
+	app.Logger.Fatal(app.Start(fmt.Sprintf(":%s", app.Ctx.Config().Port)))
 }

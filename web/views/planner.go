@@ -1,7 +1,6 @@
 package views
 
 import (
-	"github.com/labstack/echo/v4"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"meal-planner/planner"
@@ -9,13 +8,11 @@ import (
 	"time"
 )
 
-func Index(c echo.Context) error {
-	ctx := c.(*core.WebContext)
+func Index(ctx *core.WebContext) error {
 	return renderWeek(ctx, 0)
 }
 
-func Offset(c echo.Context) error {
-	ctx := c.(*core.WebContext)
+func Offset(ctx *core.WebContext) error {
 	offset := ctx.ParamAsInt("offset")
 	return renderWeek(ctx, offset)
 }

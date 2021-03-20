@@ -25,8 +25,3 @@ func GetEndWeek(date time.Time) time.Time {
 	}
 	return date
 }
-
-func IsToday(date time.Time) bool { //get monday 00:00:00
-	now := time.Now()
-	return now.Year() == date.Year() && now.Month() == date.Month() && now.Day() == date.Day()
-}
