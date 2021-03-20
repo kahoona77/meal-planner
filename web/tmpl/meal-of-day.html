@@ -1,13 +1,14 @@
 {{ define "content"}}
     <div class="meal-of-day">
-        <div>
+        <div class="date-header">
             {{ .Date.Format "Mon 02.01.2006" }}
+            <a href="planner/{{ .Id }}/select" class="btn small">Ändern</a>
         </div>
-        <div>
+        <div class="title">
             {{ .Meal.Name }}
         </div>
 
-        <div>
+        <div class="description">
             {{ .Meal.Description }}
         </div>
     </div>

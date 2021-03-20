@@ -73,8 +73,6 @@ func (t *Template) loadTemplates() {
 		tmplFiles := append([]string{layout, view}, partials...)
 		tmpl := template.Must(template.New(filepath.Base(layout)).Funcs(funcMap).ParseFiles(tmplFiles...))
 		t.Add(renderName, tmpl)
-		logrus.Infof("renderName: %s, layout: %s", renderName, layout)
-
 	}
 }
 

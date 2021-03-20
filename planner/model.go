@@ -1,7 +1,6 @@
 package planner
 
 import (
-	"github.com/sirupsen/logrus"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"time"
@@ -14,6 +13,19 @@ type Week struct {
 	End    time.Time
 	Offset int
 	Meals  []*MealOfTheDay
+}
+
+func NewMealFromId(id string) *MealOfTheDay {
+	date, _ := time.Parse(MealOfDayDateFormat, id)
+	m := &MealOfTheDay{Date: date, Meal: &meals.Meal{}}
+	m.UpdateId()
+	return m
+}
+
+func NewMeal(date time.Time) *MealOfTheDay {
+	m := &MealOfTheDay{Date: date, Meal: &meals.Meal{}}
+	m.UpdateId()
+	return m
 }
 
 type MealOfTheDay struct {
@@ -29,19 +41,6 @@ func (m *MealOfTheDay) UpdateId() {
 
 func InitDb(ctx *core.Ctx) {
 	ctx.Db().MustExec(plannerSchema)
-
-	repo := NewRepository(ctx)
-
-	date, _ := time.Parse(MealOfDayDateFormat, "2021_03_20")
-
-	if err := repo.CreateMealOfDay(&MealOfTheDay{
-		Id:     "2021_03_20",
-		Date:   date,
-		MealId: 1,
-	}); err != nil {
-		logrus.Errorf("err: %v", err)
-	}
-
 }
 
 var plannerSchema = `

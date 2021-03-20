@@ -46,10 +46,7 @@ func getWeek(ctx core.Context, offset int) (planner.Week, error) {
 	date := week.Start
 	for i := 0; i < 7; i++ {
 
-		meal, err := findMeal(mealRepo, date, mealsOfTheDay)
-		if err != nil {
-			return week, err
-		}
+		meal := findMeal(mealRepo, date, mealsOfTheDay)
 
 		week.Meals[i] = meal
 		date = date.AddDate(0, 0, 1)
@@ -57,7 +54,7 @@ func getWeek(ctx core.Context, offset int) (planner.Week, error) {
 	return week, nil
 }
 
-func findMeal(mealRepo *meals.Repository, date time.Time, mealsOfTheDay []*planner.MealOfTheDay) (*planner.MealOfTheDay, error) {
+func findMeal(mealRepo *meals.Repository, date time.Time, mealsOfTheDay []*planner.MealOfTheDay) *planner.MealOfTheDay {
 	var result *planner.MealOfTheDay = nil
 	for _, meal := range mealsOfTheDay {
 		dateId := date.Format(planner.MealOfDayDateFormat)
@@ -67,18 +64,15 @@ func findMeal(mealRepo *meals.Repository, date time.Time, mealsOfTheDay []*plann
 	}
 
 	if result == nil {
-		result = &planner.MealOfTheDay{
-			Date: date,
-			Meal: &meals.Meal{},
-		}
+		result = planner.NewMeal(date)
 	} else {
 		meal, err := mealRepo.GetMeal(result.MealId)
 		if err != nil {
-			return nil, err
+			result.Meal = &meals.Meal{}
+		} else {
+			result.Meal = meal
 		}
-		result.Meal = meal
 	}
 
-	result.UpdateId()
-	return result, nil
+	return result
 }
