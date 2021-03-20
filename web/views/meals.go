@@ -1,16 +1,13 @@
 package views
 
 import (
-	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"net/http"
 )
 
-func Meals(c echo.Context) error {
-	ctx := c.(*core.WebContext)
-
+func Meals(ctx *core.WebContext) error {
 	repo := meals.NewRepository(ctx)
 	mealsList, err := repo.GetMeals()
 	if err != nil {
@@ -21,12 +18,10 @@ func Meals(c echo.Context) error {
 		"meals": mealsList,
 	}
 
-	return c.Render(http.StatusOK, "meals-list.html", data)
+	return ctx.Render(http.StatusOK, "meals-list.html", data)
 }
 
-func MealEdit(c echo.Context) error {
-	ctx := c.(*core.WebContext)
-
+func MealEdit(ctx *core.WebContext) error {
 	meal := &meals.Meal{}
 	id := ctx.Param("id")
 
@@ -38,11 +33,10 @@ func MealEdit(c echo.Context) error {
 		}
 	}
 
-	return c.Render(http.StatusOK, "meals-edit.html", meal)
+	return ctx.Render(http.StatusOK, "meals-edit.html", meal)
 }
 
-func MealSave(c echo.Context) error {
-	ctx := c.(*core.WebContext)
+func MealSave(ctx *core.WebContext) error {
 	repo := meals.NewRepository(ctx)
 
 	meal := &meals.Meal{}
@@ -56,8 +50,8 @@ func MealSave(c echo.Context) error {
 	}
 
 	//update
-	meal.Name = c.FormValue("name")
-	meal.Description = c.FormValue("description")
+	meal.Name = ctx.FormValue("name")
+	meal.Description = ctx.FormValue("description")
 
 	if isNew {
 		if err := repo.CreateMeal(meal); err != nil {
@@ -74,8 +68,7 @@ func MealSave(c echo.Context) error {
 	return ctx.Redirect(http.StatusFound, "/meals")
 }
 
-func MealDelete(c echo.Context) error {
-	ctx := c.(*core.WebContext)
+func MealDelete(ctx *core.WebContext) error {
 	repo := meals.NewRepository(ctx)
 
 	id := ctx.ParamAsInt("id")

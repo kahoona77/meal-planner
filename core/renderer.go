@@ -1,4 +1,4 @@
-package web
+package core
 
 import (
 	"fmt"
@@ -6,8 +6,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"html/template"
 	"io"
-	"meal-planner/core"
-	"meal-planner/planner"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,7 +19,7 @@ type Template struct {
 	basePath  string
 }
 
-func NewTemplate(ctx core.Context) *Template {
+func NewTemplate(ctx Context) *Template {
 	ins := Template{
 		templates: map[string]*template.Template{},
 		basePath:  ctx.Config().BasePath,
@@ -51,7 +49,7 @@ func (t *Template) loadTemplates() {
 			return i - 1
 		},
 		"isToday": func(date time.Time) bool {
-			return planner.IsToday(date)
+			return IsToday(date)
 		},
 	}
 
@@ -96,4 +94,9 @@ func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Con
 		return fmt.Errorf("no such view. (%s)", name)
 	}
 	return t.templates[name].Execute(w, data)
+}
+
+func IsToday(date time.Time) bool { //get monday 00:00:00
+	now := time.Now()
+	return now.Year() == date.Year() && now.Month() == date.Month() && now.Day() == date.Day()
 }
