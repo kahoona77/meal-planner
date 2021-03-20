@@ -9,7 +9,7 @@
         </div>
 
         <div class="description">
-            {{ .Meal.Description }}
+            {{ htmlSafe .Meal.Description }}
         </div>
     </div>
 {{end}}
