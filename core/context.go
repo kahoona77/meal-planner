@@ -8,6 +8,11 @@ import (
 	"strconv"
 )
 
+type Context interface {
+	Db() *sqlx.DB
+	Config() *AppConfig
+}
+
 func CreateCtx(ctx *Ctx) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -18,17 +23,20 @@ func CreateCtx(ctx *Ctx) echo.MiddlewareFunc {
 }
 
 type Ctx struct {
-	Db         *sqlx.DB
-	AppConfig  *AppConfig
-	IrcService IrcService
+	db     *sqlx.DB
+	config *AppConfig
 }
 
-func (ctx *Ctx) Copy() *Ctx {
-	return &Ctx{Db: ctx.Db, IrcService: ctx.IrcService}
+func (ctx *Ctx) Db() *sqlx.DB {
+	return ctx.db
+}
+
+func (ctx *Ctx) Config() *AppConfig {
+	return ctx.config
 }
 
 func (ctx *Ctx) Close() {
-	if err := ctx.Db.Close(); err != nil {
+	if err := ctx.db.Close(); err != nil {
 		logrus.Errorf("error closing database: %v", err)
 	}
 }
@@ -45,5 +53,5 @@ func (ctx *WebContext) ParamAsInt(name string) int {
 }
 
 func (ctx *WebContext) Redirect(code int, name string) error {
-	return ctx.Context.Redirect(code, fmt.Sprintf("%s%s", ctx.AppConfig.BasePath, name))
+	return ctx.Context.Redirect(code, fmt.Sprintf("%s%s", ctx.config.BasePath, name))
 }

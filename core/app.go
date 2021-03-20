@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-type IrcService interface {
-	Connect(c *Ctx)
-	Disconnect(c *Ctx)
-}
-
 func InitApp() *Ctx {
 	formatter := &logrus.TextFormatter{}
 	formatter.ForceColors = true
@@ -30,7 +25,7 @@ func InitApp() *Ctx {
 		panic(err)
 	}
 
-	ctx := &Ctx{AppConfig: &conf, Db: db}
+	ctx := &Ctx{config: &conf, db: db}
 
 	return ctx
 }

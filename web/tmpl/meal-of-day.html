@@ -1,0 +1,14 @@
+{{ define "content"}}
+    <div class="meal-of-day">
+        <div>
+            {{ .Date.Format "Mon 02.01.2006" }}
+        </div>
+        <div>
+            {{ .Meal.Name }}
+        </div>
+
+        <div>
+            {{ .Meal.Description }}
+        </div>
+    </div>
+{{end}}

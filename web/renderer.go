@@ -21,10 +21,10 @@ type Template struct {
 	basePath  string
 }
 
-func NewTemplate(ctx *core.Ctx) *Template {
+func NewTemplate(ctx core.Context) *Template {
 	ins := Template{
 		templates: map[string]*template.Template{},
-		basePath:  ctx.AppConfig.BasePath,
+		basePath:  ctx.Config().BasePath,
 	}
 
 	ins.loadTemplates()
