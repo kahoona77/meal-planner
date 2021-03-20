@@ -2,9 +2,11 @@ package views
 
 import (
 	"github.com/sirupsen/logrus"
+	"io"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"net/http"
+	"os"
 )
 
 func Meals(ctx *core.WebContext) error {
@@ -47,6 +49,28 @@ func MealSave(ctx *core.WebContext) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		return err
+	}
+	src, err := file.Open()
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+
+	// Destination
+	dst, err := os.Create(file.Filename)
+	if err != nil {
+		return err
+	}
+	defer dst.Close()
+
+	// Copy
+	if _, err = io.Copy(dst, src); err != nil {
+		return err
 	}
 
 	//update

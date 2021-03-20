@@ -101,13 +101,17 @@ form input {
     border: #4a4a4a solid 1px;
     color: #4a4a4a;
 }
+
+form input[type="file"] {
+    border: none;
+    display: inline;
+}
+
 form .control {
     margin: 0.5rem 0;
 }
 
-textarea {
-    width: 100%;
-}
+.trix-button-group--file-tools { display: none !important; }
 
 .icon {
     height: 24px;
@@ -243,8 +247,17 @@ textarea {
     overflow: hidden;
 }
 
+.meals-edit .edit-form {
+    max-height: calc(100vh - 141px);
+    overflow-y: auto;
+}
+
+.meals-edit .edit-form .image {
+    display: flex;
+}
+
 .meals-edit trix-editor {
-    max-height: calc(100vh - 293px);
+    max-height: calc(100vh - 220px);
     overflow-y: auto;
 }
 
