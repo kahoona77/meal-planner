@@ -1,0 +1,19 @@
+{{ define "content"}}
+    <div class="meals">
+
+        {{ range .meals }}
+            <a href="meals/{{.Id}}" class="card card-1 meal">
+                    {{.Name}}
+                <div class="description">
+                    {{.Description}}
+                </div>
+            </a>
+        {{end}}
+
+        <a href="meals/new" class="flab">
+            <svg>
+                <use xlink:href="assets/img/solid.svg#plus"></use>
+            </svg>
+        </a>
+    </div>
+{{end}}

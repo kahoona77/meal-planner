@@ -17,7 +17,7 @@
 }
 
 body {
-    font-family: "Lexend Deca", sans-serif;
+    font-family: "Ubuntu", sans-serif;
     font-size: 16px;
     line-height: 1.5;
     color: #4a4a4a;
@@ -36,6 +36,7 @@ h1, h2, h3, h4 {
 a {
     text-decoration: none;
     cursor: pointer;
+    color: unset;
 }
 
 .centered {
@@ -76,6 +77,29 @@ button {
     fill: white;
     width: 24px;
     height: 24px;
+}
+
+form label {
+    display: block;
+}
+form input {
+    display: block;
+    width: 100%;
+    height: 32px;
+    margin: 0.2rem 0;
+    padding: 0 0.2rem;
+    font-family: "Lexend Deca", sans-serif;
+    font-size: 16px;
+    font-weight: 100;
+    border: #4a4a4a solid 1px;
+    color: #4a4a4a;
+}
+form .control {
+    margin: 0.5rem 0;
+}
+
+textarea {
+    width: 100%;
 }
 
 .icon {
@@ -168,6 +192,7 @@ button {
 }
 
 .content {
+    padding: .5rem;
     max-height: calc(100vh - 80px);
     overflow-y: auto;
 }
@@ -177,10 +202,6 @@ button {
     line-height: 2rem;
     display: flex;
     justify-content: space-between;
-}
-
-.planner .week {
-    margin: .5rem;
 }
 
 .planner .week .meal {
@@ -201,4 +222,16 @@ button {
 .planner .week .meal .day{
     text-align: center;
     border-right: solid 1px var(--grey-light);
+}
+
+.meals .meal {
+    margin: .5rem 0;
+    padding: .25rem;
+}
+
+.meals .meal .description {
+    font-size: 14px;
+    font-weight: 300;
+    max-height: 4rem;
+    overflow: hidden;
 }
