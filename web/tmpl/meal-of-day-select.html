@@ -1,0 +1,22 @@
+{{ define "content"}}
+    <div class="meal-of-day-select">
+        {{$currentId := .mealOfDay.MealId}}
+        <form id="meal-select" action="planner/{{.mealOfDay.Id}}/select" method="post">
+            <div class="card card-1 meal">
+                <input type="radio" id="none" name="selected" value="">
+                <label for="none">- leer -</label>
+            </div>
+            {{ range .meals }}
+                <div class="card card-1 meal">
+                    <input type="radio" id="{{.Id}}" name="selected" value="{{.Id}}" {{if eq .Id $currentId}}checked{{end}}>
+                    <label for="{{.Id}}">{{.Name}}</label>
+                </div>
+            {{end}}
+        </form>
+
+       <div class="submit centered">
+           <button class="btn primary" type="submit" form="meal-select">Speichern</button>
+       </div>
+
+    </div>
+{{end}}

@@ -23,6 +23,8 @@ func main() {
 	root.GET("/offset/:offset", views.Offset)
 
 	root.GET("/planner/:id", views.MealOfDay)
+	root.GET("/planner/:id/select", views.SelectMealOfDayView)
+	root.POST("/planner/:id/select", views.SelectMealOfDay)
 
 	root.GET("/meals", views.Meals)
 	root.POST("/meals", views.MealSave)

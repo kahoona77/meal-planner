@@ -57,11 +57,18 @@ button {
     padding: 0.3rem;
     min-width: 120px;
     font-size: 18px;
+    text-align: center;
 }
 .btn.primary {
     background-color: var(--blue);
     color: white;
 }
+
+.btn.small {
+    min-width: 80px;
+    font-size: 14px;
+}
+
 
 .flab {
     position: absolute;
@@ -234,4 +241,54 @@ textarea {
     font-weight: 300;
     max-height: 4rem;
     overflow: hidden;
+}
+
+/* meal of day */
+
+.meal-of-day .date-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.2rem;
+}
+
+.meal-of-day .title {
+    margin: .5rem 0;
+    font-size: 1.5rem;
+}
+
+.meal-of-day .description {
+    font-weight: 300;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+/* meal of day select*/
+
+.meal-of-day-select form {
+
+}
+
+.meal-of-day-select .meal {
+    margin: .5rem 0;
+    padding: .5rem;
+    display: flex;
+}
+
+.meal-of-day-select input {
+    width: unset;
+    height: 1rem;
+    margin: .5rem;
+}
+
+.meal-of-day-select label {
+    flex-grow: 1;
+    line-height: 2rem;
+}
+
+.meal-of-day-select .submit {
+    height: 3rem;
+    position: absolute;
+    width: calc(100vw - 1rem);
+    bottom: 3rem;
 }
