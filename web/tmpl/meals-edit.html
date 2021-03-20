@@ -1,22 +1,29 @@
 {{ define "site-header"}}
     <link rel="stylesheet" type="text/css" href="assets/trix.css">
     <script type="text/javascript" src="assets/trix.js"></script>
+    <script type="text/javascript" src="assets/image-select.js"></script>
 {{end}}
 {{ define "content"}}
     <div class="meals-edit">
         <form id="meal-delete" action="meals/{{.Id}}/delete" method="post" hidden></form>
-        <form id="meal-edit" action="meals{{if (gt .Id 0)}}/{{.Id}}{{end}}" method="post">
-            <div class="control">
-                <label>Name</label>
-                <input type="text" name="name" value="{{.Name}}">
-            </div>
-            <div class="control">
-                <label>Beschreibung</label>
-                <input id="x" type="hidden" name="description" value="{{.Description}}">
-                <trix-editor input="x"></trix-editor>
+        <div class="edit-form">
+            <form id="meal-edit" action="meals{{if (gt .Id 0)}}/{{.Id}}{{end}}" method="post" enctype="multipart/form-data">
+                <div class="control">
+                    <label>Name</label>
+                    <input type="text" name="name" value="{{.Name}}">
+                </div>
+                <div class="image">
+                    <image-select name="image"></image-select>
+                </div>
+                <div class="control">
+                    <label>Beschreibung</label>
+                    <input id="x" type="hidden" name="description" value="{{.Description}}">
+                    <trix-editor input="x"></trix-editor>
 
-            </div>
-        </form>
+                </div>
+            </form>
+        </div>
+
 
         <div class="buttons centered">
             <button class="btn" type="submit" form="meal-delete">Delete</button>
