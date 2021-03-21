@@ -15,7 +15,7 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - name: Build linux amd64
-      run: GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -mod=vendor -v -o meal-planner
+      run: GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -mod=vendor -ldflags '-linkmode external -extldflags "-static"' -o meal-planner
     - name: Test
       run: go test -mod=vendor -v ./...
     - name: Upload artifacts
