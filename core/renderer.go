@@ -1,6 +1,7 @@
 package core
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -53,6 +54,12 @@ func (t *Template) loadTemplates() {
 		},
 		"htmlSafe": func(html string) template.HTML {
 			return template.HTML(html)
+		},
+		"fileUrl": func(id sql.NullInt64) string {
+			if !id.Valid {
+				return ""
+			}
+			return fmt.Sprintf("files/%d", id.Int64)
 		},
 	}
 

@@ -1,12 +1,13 @@
 package views
 
 import (
+	"database/sql"
 	"github.com/sirupsen/logrus"
-	"io"
+	"io/ioutil"
 	"meal-planner/core"
+	"meal-planner/files"
 	"meal-planner/meals"
 	"net/http"
-	"os"
 )
 
 func Meals(ctx *core.WebContext) error {
@@ -51,31 +52,26 @@ func MealSave(ctx *core.WebContext) error {
 		}
 	}
 
-	file, err := ctx.FormFile("image")
-	if err != nil {
-		return err
-	}
-	src, err := file.Open()
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	// Destination
-	dst, err := os.Create(file.Filename)
-	if err != nil {
-		return err
-	}
-	defer dst.Close()
-
-	// Copy
-	if _, err = io.Copy(dst, src); err != nil {
-		return err
-	}
-
 	//update
 	meal.Name = ctx.FormValue("name")
 	meal.Description = ctx.FormValue("description")
+
+	imageFile, err := getNewImageFile(ctx, "image")
+	if err == nil {
+		filesRepo := files.NewRepository(ctx)
+		if err := filesRepo.CreateFile(imageFile); err != nil {
+			return err
+		}
+
+		//first delete previous file
+		if meal.ImageFileId.Valid {
+			if err := filesRepo.DeleteFile(meal.ImageFileId.Int64); err != nil {
+				return err
+			}
+		}
+
+		meal.ImageFileId = sql.NullInt64{Int64: imageFile.Id, Valid: true}
+	}
 
 	if isNew {
 		if err := repo.CreateMeal(meal); err != nil {
@@ -101,4 +97,31 @@ func MealDelete(ctx *core.WebContext) error {
 	}
 
 	return ctx.Redirect(http.StatusFound, "/meals")
+}
+
+func getNewImageFile(ctx *core.WebContext, name string) (*files.File, error) {
+	file, err := ctx.FormFile(name)
+	if err != nil {
+		return nil, err
+	}
+	src, err := file.Open()
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := ioutil.ReadAll(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := src.Close(); err != nil {
+		return nil, err
+	}
+
+	imageFile := &files.File{
+		Name:        file.Filename,
+		ContentType: file.Header.Get("Content-Type"),
+		Data:        data,
+	}
+	return imageFile, nil
 }

@@ -13,14 +13,14 @@ func NewRepository(c core.Context) *Repository {
 	return &Repository{db: c.Db()}
 }
 
-const mealsInsert = `INSERT INTO meals (name, description) VALUES (:name, :description)`
+const mealsInsert = `INSERT INTO meals (name, description, image_file_id) VALUES (:name, :description, :image_file_id)`
 
 func (r *Repository) CreateMeal(meal *Meal) error {
 	_, err := r.db.NamedExec(mealsInsert, meal)
 	return err
 }
 
-const mealsUpdate = `UPDATE meals SET name=:name, description=:description WHERE id = :id`
+const mealsUpdate = `UPDATE meals SET name=:name, description=:description, image_file_id=:image_file_id WHERE id = :id`
 
 func (r *Repository) UpdateMeal(meal *Meal) error {
 	_, err := r.db.NamedExec(mealsUpdate, meal)
