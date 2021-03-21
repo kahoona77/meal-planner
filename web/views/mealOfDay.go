@@ -18,7 +18,7 @@ func MealOfDay(ctx *core.WebContext) error {
 	if err != nil {
 		mealOfDay = planner.NewMealFromId(id)
 	} else {
-		meal, merr := mealsRepo.GetMeal(int(mealOfDay.MealId.Int32))
+		meal, merr := mealsRepo.GetMeal(mealOfDay.MealId.Int64)
 		if merr != nil {
 			mealOfDay.Meal = &meals.Meal{}
 		} else {
@@ -66,9 +66,9 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 	selected := ctx.FormValue("selected")
 	mealId, err := strconv.Atoi(selected)
 	if err != nil {
-		mealOfDay.MealId = sql.NullInt32{}
+		mealOfDay.MealId = sql.NullInt64{}
 	} else {
-		mealOfDay.MealId = sql.NullInt32{Int32: int32(mealId), Valid: true}
+		mealOfDay.MealId = sql.NullInt64{Int64: int64(mealId), Valid: true}
 	}
 
 	if createNew {

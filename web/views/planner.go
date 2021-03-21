@@ -66,7 +66,7 @@ func findMeal(mealRepo *meals.Repository, date time.Time, mealsOfTheDay []*plann
 	if result == nil {
 		result = planner.NewMeal(date)
 	} else {
-		meal, err := mealRepo.GetMeal(int(result.MealId.Int32))
+		meal, err := mealRepo.GetMeal(result.MealId.Int64)
 		if err != nil {
 			result.Meal = &meals.Meal{}
 		} else {

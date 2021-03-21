@@ -4,6 +4,17 @@
             {{ .Date.Format "Mon 02.01.2006" }}
             <a href="planner/{{ .Id }}/select" class="btn small">Ändern</a>
         </div>
+        <div class="image">
+            {{ if .Meal.ImageFileId.Valid }}
+                <img src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
+            {{ else }}
+                <div class="placeholder">
+                    <svg>
+                        <use xlink:href="assets/img/solid.svg#hamburger"></use>
+                    </svg>
+                </div>
+            {{ end }}
+        </div>
         <div class="title">
             {{ .Meal.Name }}
         </div>

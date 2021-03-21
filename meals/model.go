@@ -6,7 +6,7 @@ import (
 )
 
 type Meal struct {
-	Id          int           `db:"id"`
+	Id          int64         `db:"id"`
 	Name        string        `db:"name"`
 	Description string        `db:"description"`
 	ImageFileId sql.NullInt64 `db:"image_file_id"`

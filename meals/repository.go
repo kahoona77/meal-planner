@@ -27,7 +27,7 @@ func (r *Repository) UpdateMeal(meal *Meal) error {
 	return err
 }
 
-func (r *Repository) GetMeal(id int) (*Meal, error) {
+func (r *Repository) GetMeal(id int64) (*Meal, error) {
 	var meal Meal
 	err := r.db.Get(&meal, "SELECT * FROM meals WHERE id=$1", id)
 	return &meal, err
@@ -39,7 +39,7 @@ func (r *Repository) GetMeals() ([]*Meal, error) {
 	return meals, err
 }
 
-func (r *Repository) DeleteMeal(id int) error {
+func (r *Repository) DeleteMeal(id int64) error {
 	_, err := r.db.Exec("DELETE FROM meals WHERE id=$1", id)
 	return err
 }
