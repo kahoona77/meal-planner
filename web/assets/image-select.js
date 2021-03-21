@@ -31,10 +31,16 @@ class ImageSelect extends HTMLElement {
 
 
     connectedCallback() {
-        console.log("imageselect");
+
         this.attachShadow({mode: 'open'});
         this.shadowRoot.appendChild(template.content.cloneNode(true));
+
         this.image = this.shadowRoot.querySelector('img');
+        const src = this.getAttribute('src');
+        if (src) {
+            this.image.src = src;
+        }
+
         this.fileSelect = this.shadowRoot.querySelector('.file-select');
         this.fileSelect.addEventListener("change", this.changeImage);
         this.shadowRoot.querySelector(".add-icon").addEventListener("click", this.openFileSelect);

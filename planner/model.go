@@ -1,6 +1,7 @@
 package planner
 
 import (
+	"database/sql"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"time"
@@ -29,10 +30,10 @@ func NewMeal(date time.Time) *MealOfTheDay {
 }
 
 type MealOfTheDay struct {
-	Id     string      `db:"id"`
-	Date   time.Time   `db:"date"`
-	MealId int         `db:"meal_id"`
-	Meal   *meals.Meal `db:"-"`
+	Id     string        `db:"id"`
+	Date   time.Time     `db:"date"`
+	MealId sql.NullInt32 `db:"meal_id"`
+	Meal   *meals.Meal   `db:"-"`
 }
 
 func (m *MealOfTheDay) UpdateId() {
@@ -47,5 +48,5 @@ var plannerSchema = `
 CREATE TABLE IF NOT EXISTS meals_of_day (
 	id          VARCHAR(10) PRIMARY KEY,
 	date        TIMESTAMP NOT NULL,
-	meal_id     INTEGER NOT NULL
+	meal_id     INTEGER REFERENCES meals
 );`

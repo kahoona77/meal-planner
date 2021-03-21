@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"meal-planner/core"
+	"meal-planner/files"
 	"meal-planner/meals"
 	"meal-planner/planner"
 	"meal-planner/web/views"
@@ -12,12 +13,15 @@ func main() {
 	app := core.InitApp()
 	defer app.Ctx.Close()
 
+	files.InitDb(app.Ctx)
 	meals.InitDb(app.Ctx)
 	planner.InitDb(app.Ctx)
 
 	root := app.Group(app.Ctx.Config().BasePath)
 
 	root.Static("/assets", "./web/assets")
+
+	root.GET("/files/:id", files.GetFile)
 
 	root.GET("/", views.Index)
 	root.GET("/offset/:offset", views.Offset)

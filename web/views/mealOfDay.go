@@ -1,6 +1,7 @@
 package views
 
 import (
+	"database/sql"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"meal-planner/planner"
@@ -17,7 +18,7 @@ func MealOfDay(ctx *core.WebContext) error {
 	if err != nil {
 		mealOfDay = planner.NewMealFromId(id)
 	} else {
-		meal, merr := mealsRepo.GetMeal(mealOfDay.MealId)
+		meal, merr := mealsRepo.GetMeal(int(mealOfDay.MealId.Int32))
 		if merr != nil {
 			mealOfDay.Meal = &meals.Meal{}
 		} else {
@@ -65,9 +66,9 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 	selected := ctx.FormValue("selected")
 	mealId, err := strconv.Atoi(selected)
 	if err != nil {
-		mealOfDay.MealId = -1
+		mealOfDay.MealId = sql.NullInt32{}
 	} else {
-		mealOfDay.MealId = mealId
+		mealOfDay.MealId = sql.NullInt32{Int32: int32(mealId), Valid: true}
 	}
 
 	if createNew {
