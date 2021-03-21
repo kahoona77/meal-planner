@@ -32,7 +32,7 @@ func NewMeal(date time.Time) *MealOfTheDay {
 type MealOfTheDay struct {
 	Id     string        `db:"id"`
 	Date   time.Time     `db:"date"`
-	MealId sql.NullInt32 `db:"meal_id"`
+	MealId sql.NullInt64 `db:"meal_id"`
 	Meal   *meals.Meal   `db:"-"`
 }
 

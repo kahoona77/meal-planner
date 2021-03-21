@@ -30,7 +30,7 @@ func MealEdit(ctx *core.WebContext) error {
 
 	if id != "" {
 		var err error
-		meal, err = meals.NewRepository(ctx.Ctx).GetMeal(ctx.ParamAsInt("id"))
+		meal, err = meals.NewRepository(ctx.Ctx).GetMeal(int64(ctx.ParamAsInt("id")))
 		if err != nil {
 			return err
 		}
@@ -46,7 +46,7 @@ func MealSave(ctx *core.WebContext) error {
 	isNew := ctx.Param("id") == ""
 	if !isNew {
 		var err error
-		meal, err = meals.NewRepository(ctx.Ctx).GetMeal(ctx.ParamAsInt("id"))
+		meal, err = meals.NewRepository(ctx.Ctx).GetMeal(int64(ctx.ParamAsInt("id")))
 		if err != nil {
 			return err
 		}
@@ -90,9 +90,22 @@ func MealSave(ctx *core.WebContext) error {
 
 func MealDelete(ctx *core.WebContext) error {
 	repo := meals.NewRepository(ctx)
-
 	id := ctx.ParamAsInt("id")
-	if err := repo.DeleteMeal(id); err != nil {
+
+	meal, err := repo.GetMeal(int64(id))
+	if err != nil {
+		return err
+	}
+
+	//first delete file
+	if meal.ImageFileId.Valid {
+		filesRepo := files.NewRepository(ctx)
+		if err := filesRepo.DeleteFile(meal.ImageFileId.Int64); err != nil {
+			return err
+		}
+	}
+
+	if err := repo.DeleteMeal(meal.Id); err != nil {
 		return err
 	}
 

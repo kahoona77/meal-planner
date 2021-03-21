@@ -25,8 +25,19 @@
                     <div>{{ .Date.Format "Mon" }}</div>
                     <div>{{ .Date.Format "02.01." }}</div>
                 </div>
-                <div>
+                <div class="meal-name">
                     {{.Meal.Name}}
+                </div>
+                <div class="image">
+                    {{ if .Meal.ImageFileId.Valid }}
+                        <img src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
+                    {{ else }}
+                        <div class="placeholder">
+                            <svg>
+                                <use xlink:href="assets/img/solid.svg#hamburger"></use>
+                            </svg>
+                        </div>
+                    {{ end }}
                 </div>
             </a>
 

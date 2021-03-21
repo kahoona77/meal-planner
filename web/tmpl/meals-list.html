@@ -3,10 +3,25 @@
 
         {{ range .meals }}
             <a href="meals/{{ .Id }}" class="card card-1 meal">
-                {{ .Name }}
-                <div class="description">
-                    {{ htmlSafe .Description }}
+                <div class="image">
+                   {{ if .ImageFileId.Valid }}
+                       <img src="{{ fileUrl .ImageFileId}}"  alt="{{ .Name }}">
+                   {{ else }}
+                        <div class="placeholder">
+                            <svg>
+                                <use xlink:href="assets/img/solid.svg#hamburger"></use>
+                            </svg>
+                        </div>
+                   {{ end }}
                 </div>
+                <div>
+                    {{ .Name }}
+                    <div class="description">
+                        {{ htmlSafe .Description }}
+                    </div>
+
+                </div>
+
             </a>
         {{end}}
 

@@ -1,9 +1,10 @@
 :root {
-    --grey-darker:  hsl(0, 0%, 21%);
-    --grey-dark:    hsl(0, 0%, 29%);
-    --grey:         hsl(0, 0%, 48%);
-    --grey-light:   hsl(0, 0%, 71%);
-    --grey-lighter: hsl(0, 0%, 86%);
+    --grey-darker:   hsl(0, 0%, 21%);
+    --grey-dark:     hsl(0, 0%, 29%);
+    --grey:          hsl(0, 0%, 48%);
+    --grey-light:    hsl(0, 0%, 71%);
+    --grey-lighter:  hsl(0, 0%, 86%);
+    --grey-lightest: hsl(0, 0%, 94%);
 
     --orange:       hsl(14,  100%, 53%);
     --yellow:       hsl(48,  100%, 67%);
@@ -226,18 +227,77 @@ form .control {
     background-color: var(--blue-light);
 }
 
-.planner .week .meal > * {
-    padding: 0 1rem;
-}
-
 .planner .week .meal .day{
+    padding: 0 .5rem;
     text-align: center;
     border-right: solid 1px var(--grey-light);
 }
+.planner .week .meal .meal-name{
+    padding-left: .5rem;
+    flex-grow: 1;
+}
+
+.planner .image{
+    --image-size: 4rem;
+
+    width: var(--image-size);
+    height: var(--image-size);
+}
+
+.planner .image img{
+    width: var(--image-size);
+    height: var(--image-size);
+    object-fit: cover;
+}
+
+.planner .image .placeholder {
+    background-color: var(--grey-lighter);
+    width: var(--image-size);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.planner .image .placeholder svg {
+    fill: var(--grey-lightest);
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Meal-List */
 
 .meals .meal {
     margin: .5rem 0;
     padding: .25rem;
+    display: flex;
+}
+
+.meals .meal .image{
+    width: 5.5rem;
+    height: 5.5rem;
+    margin-right: .5rem;
+}
+
+.meals .meal .image img{
+    width: 5.5rem;
+    height: 5.5rem;
+    object-fit: cover;
+}
+
+.meals .meal .image .placeholder {
+    background-color: var(--grey-lighter);
+    width: 5.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meals .meal .image .placeholder svg {
+    fill: var(--grey-lightest);
+    width: 2rem;
+    height: 2rem;
 }
 
 .meals .meal .description {
@@ -246,6 +306,8 @@ form .control {
     max-height: 4rem;
     overflow: hidden;
 }
+
+/* Meal-Edit */
 
 .meals-edit .edit-form {
     max-height: calc(100vh - 141px);
@@ -259,6 +321,10 @@ form .control {
 .meals-edit trix-editor {
     max-height: calc(100vh - 220px);
     overflow-y: auto;
+}
+
+.meals-edit image-select {
+    width: 100%;
 }
 
 /* meal of day */
@@ -277,20 +343,46 @@ form .control {
 
 .meal-of-day .description {
     font-weight: 300;
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
+}
+
+.meal-of-day .image{
+    --image-size: 12rem;
+    display: flex;
+    justify-content: center;
+
+    width: 100%;
+    height: var(--image-size);
+    margin: 1rem 0;
+}
+
+.meal-of-day .image img{
+    width: var(--image-size);
+    height: var(--image-size);
+    object-fit: cover;
+}
+
+.meal-of-day .image .placeholder {
+    background-color: var(--grey-lighter);
+    width: var(--image-size);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meal-of-day .image .placeholder svg {
+    fill: var(--grey-lightest);
+    width: 2rem;
+    height: 2rem;
 }
 
 /* meal of day select*/
-
-.meal-of-day-select form {
-
-}
 
 .meal-of-day-select .meal {
     margin: .5rem 0;
     padding: .5rem;
     display: flex;
+    align-items: center;
 }
 
 .meal-of-day-select input {
@@ -302,6 +394,7 @@ form .control {
 .meal-of-day-select label {
     flex-grow: 1;
     line-height: 2rem;
+    margin-left: .5rem;
 }
 
 .meal-of-day-select .submit {
@@ -309,4 +402,32 @@ form .control {
     position: absolute;
     width: calc(100vw - 1rem);
     bottom: 3rem;
+}
+
+.meal-of-day-select .image{
+    --image-size: 4rem;
+
+    width: var(--image-size);
+    height: var(--image-size);
+}
+
+.meal-of-day-select .image img{
+    width: var(--image-size);
+    height: var(--image-size);
+    object-fit: cover;
+}
+
+.meal-of-day-select .image .placeholder {
+    background-color: var(--grey-lighter);
+    width: var(--image-size);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.meal-of-day-select .image .placeholder svg {
+    fill: var(--grey-lightest);
+    width: 2rem;
+    height: 2rem;
 }

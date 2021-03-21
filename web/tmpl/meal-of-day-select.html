@@ -1,6 +1,6 @@
 {{ define "content"}}
     <div class="meal-of-day-select">
-        {{$currentId := .mealOfDay.MealId}}
+        {{$currentId := .mealOfDay.MealId.Int64}}
         <form id="meal-select" action="planner/{{.mealOfDay.Id}}/select" method="post">
             <div class="card card-1 meal">
                 <input type="radio" id="none" name="selected" value="">
@@ -9,6 +9,17 @@
             {{ range .meals }}
                 <div class="card card-1 meal">
                     <input type="radio" id="{{.Id}}" name="selected" value="{{.Id}}" {{if eq .Id $currentId}}checked{{end}}>
+                    <div class="image">
+                        {{ if .ImageFileId.Valid }}
+                            <img src="{{ fileUrl .ImageFileId}}"  alt="{{ .Name }}">
+                        {{ else }}
+                            <div class="placeholder">
+                                <svg>
+                                    <use xlink:href="assets/img/solid.svg#hamburger"></use>
+                                </svg>
+                            </div>
+                        {{ end }}
+                    </div>
                     <label for="{{.Id}}">{{.Name}}</label>
                 </div>
             {{end}}
