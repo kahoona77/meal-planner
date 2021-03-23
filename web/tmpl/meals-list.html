@@ -2,7 +2,7 @@
     <div class="meals">
 
         {{ range .meals }}
-            <a href="meals/{{ .Id }}" class="card card-1 meal">
+            <div onclick="window.location = 'meals/{{ .Id }}'" class="card card-1 meal">
                 <div class="image">
                    {{ if .ImageFileId.Valid }}
                        <img src="{{ fileUrl .ImageFileId}}"  alt="{{ .Name }}">
@@ -19,10 +19,8 @@
                     <div class="description">
                         {{ htmlSafe .Description }}
                     </div>
-
                 </div>
-
-            </a>
+            </div>
         {{end}}
 
         <a href="meals/new" class="flab">
