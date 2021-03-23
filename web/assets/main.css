@@ -271,6 +271,7 @@ form .control {
     margin: .5rem 0;
     padding: .25rem;
     display: flex;
+    cursor: pointer;
 }
 
 .meals .meal .image{
