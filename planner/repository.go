@@ -38,7 +38,7 @@ func (r *Repository) GetMealOfDay(mealId string) (*MealOfTheDay, error) {
 
 func (r *Repository) GetMealsOfDay(start time.Time, end time.Time) ([]*MealOfTheDay, error) {
 	var meals []*MealOfTheDay
-	err := r.db.Select(&meals, "SELECT * FROM meals_of_day where date >= $1 AND date < $2  ORDER BY date", start, end)
+	err := r.db.Select(&meals, "SELECT * FROM meals_of_day where date >= $1 AND date < $2  ORDER BY date", start.UTC(), end.UTC())
 	return meals, err
 }
 
