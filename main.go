@@ -6,11 +6,12 @@ import (
 	"meal-planner/files"
 	"meal-planner/meals"
 	"meal-planner/planner"
+	"meal-planner/web"
 	"meal-planner/web/views"
 )
 
 func main() {
-	app := core.InitApp()
+	app := core.InitApp(web.CreateRenderer)
 	defer app.Ctx.Close()
 
 	files.InitDb(app.Ctx)
@@ -19,7 +20,7 @@ func main() {
 
 	root := app.Group(app.Ctx.Config().BasePath)
 
-	root.Static("/assets", "./web/assets")
+	root.Static("/assets", "./web/assets/dist")
 
 	root.GET("/files/:id", files.GetFile)
 

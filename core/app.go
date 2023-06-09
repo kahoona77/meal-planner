@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func InitApp() *App {
+func InitApp(rendererFactory CreateRendererFunc) *App {
 	formatter := &logrus.TextFormatter{}
 	formatter.ForceColors = true
 	formatter.FullTimestamp = true
@@ -29,14 +29,17 @@ func InitApp() *App {
 	}
 
 	ctx := &Ctx{config: &conf, db: db}
+	renderer, err := rendererFactory(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	e := echo.New()
-	e.Renderer = NewTemplate(ctx)
 	e.Debug = true
 	//e.Logger.SetLevel(log.DEBUG)
 	//e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	e.Use(CreateCtx(ctx))
+	e.Use(CreateCtx(ctx, renderer))
 
 	return &App{Echo: e, Ctx: ctx}
 }

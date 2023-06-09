@@ -17,11 +17,11 @@ func Meals(ctx *core.WebContext) error {
 		logrus.Errorf("error loading meals: %v", err)
 	}
 
-	data := map[string]interface{}{
+	data := core.TemplateData{
 		"meals": mealsList,
 	}
 
-	return ctx.Render(http.StatusOK, "meals-list.html", data)
+	return ctx.RenderTemplate(http.StatusOK, "meals-list.html", data)
 }
 
 func MealEdit(ctx *core.WebContext) error {
@@ -36,7 +36,7 @@ func MealEdit(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.Render(http.StatusOK, "meals-edit.html", meal)
+	return ctx.RenderTemplate(http.StatusOK, "meals-edit.html", core.TemplateData{"meal": meal})
 }
 
 func MealSave(ctx *core.WebContext) error {

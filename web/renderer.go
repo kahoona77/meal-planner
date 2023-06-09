@@ -1,12 +1,12 @@
-package core
+package web
 
 import (
 	"database/sql"
 	"fmt"
-	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"html/template"
 	"io"
+	"meal-planner/core"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,22 +15,45 @@ import (
 
 const templatesDir = "web/tmpl"
 
-type Template struct {
-	templates map[string]*template.Template
-	basePath  string
+type HtmlRenderer struct {
+	templates    map[string]*template.Template
+	basePath     string
+	isDev        bool
+	manifest     Manifest
+	devServerUrl string
 }
 
-func NewTemplate(ctx Context) *Template {
-	ins := Template{
+func NewRenderer(basePath string, manifest Manifest, isDev bool) *HtmlRenderer {
+	renderer := HtmlRenderer{
 		templates: map[string]*template.Template{},
-		basePath:  ctx.Config().BasePath,
+		basePath:  basePath,
+		manifest:  manifest,
+		isDev:     isDev,
 	}
 
-	ins.loadTemplates()
-	return &ins
+	if isDev {
+		renderer.devServerUrl = "http://localhost:5173"
+	}
+
+	renderer.loadTemplates()
+	return &renderer
 }
 
-func (t *Template) loadTemplates() {
+func CreateRenderer(ctx *core.Ctx) (core.HtmlRenderer, error) {
+	manifest := EmptyManifest()
+	f := os.DirFS("./")
+	if !ctx.Config().IsDev {
+		var err error
+		manifest, err = ParseManifest("web/assets/dist/manifest.json", f)
+		if err != nil {
+			return nil, fmt.Errorf("cloud not prase manifest-file: %v", err)
+		}
+	}
+
+	return NewRenderer(ctx.Config().BasePath, manifest, ctx.Config().IsDev), nil
+}
+
+func (t *HtmlRenderer) loadTemplates() {
 	ext := ".html"
 	layout := templatesDir + "/base" + ext
 	_, err := os.Stat(layout)
@@ -61,6 +84,20 @@ func (t *Template) loadTemplates() {
 			}
 			return fmt.Sprintf("files/%d", id.Int64)
 		},
+		"assetUrl": func(asset string) string {
+			if !t.isDev {
+				asset = t.manifest.File(asset)
+			}
+
+			return fmt.Sprintf("%s%s/assets/%s", t.devServerUrl, t.basePath, asset)
+		},
+		"publicUrl": func(asset string) string {
+			if !t.isDev {
+				asset = t.manifest.File(asset)
+			}
+
+			return fmt.Sprintf("%s%s/%s", t.devServerUrl, t.basePath, asset)
+		},
 	}
 
 	views, _ := filepath.Glob(templatesDir + "**/*" + ext)
@@ -86,7 +123,7 @@ func (t *Template) loadTemplates() {
 	}
 }
 
-func (t *Template) Add(name string, tmpl *template.Template) {
+func (t *HtmlRenderer) Add(name string, tmpl *template.Template) {
 	if tmpl == nil {
 		panic("template can not be nil")
 	}
@@ -96,11 +133,16 @@ func (t *Template) Add(name string, tmpl *template.Template) {
 	t.templates[name] = tmpl
 }
 
-func (t *Template) Render(w io.Writer, name string, data interface{}, _ echo.Context) error {
+func (t *HtmlRenderer) Render(w io.Writer, name string, data core.TemplateData, ctx *core.WebContext) error {
 	t.loadTemplates()
 	if _, ok := t.templates[name]; ok == false {
 		return fmt.Errorf("no such view. (%s)", name)
 	}
+
+	data["isDev"] = t.isDev
+	data["basePath"] = t.basePath
+	data["manifest"] = t.manifest
+
 	return t.templates[name].Execute(w, data)
 }
 
