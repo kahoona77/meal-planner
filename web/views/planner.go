@@ -23,7 +23,7 @@ func renderWeek(ctx *core.WebContext, offset int) error {
 		return err
 	}
 
-	return ctx.Render(http.StatusOK, "index.html", &week)
+	return ctx.RenderTemplate(http.StatusOK, "index.html", core.TemplateData{"week": &week})
 }
 
 func getWeek(ctx core.Context, offset int) (planner.Week, error) {

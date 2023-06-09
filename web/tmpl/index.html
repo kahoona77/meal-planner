@@ -1,17 +1,17 @@
 {{ define "content"}}
     <div class="planner">
         <div class="planner-header">
-            <a class="icon big" href="offset/{{dec .Offset}}">
+            <a class="icon big" href="offset/{{dec .week.Offset}}">
                 <svg>
                     <use xlink:href="assets/img/solid.svg#chevron-left"></use>
                 </svg>
             </a>
 
             <div>
-                {{ .Start.Format "02.01.2006" }} - {{ .End.Format "02.01.2006" }}
+                {{ .week.Start.Format "02.01.2006" }} - {{ .week.End.Format "02.01.2006" }}
             </div>
 
-            <a class="icon big" href="offset/{{inc .Offset}}">
+            <a class="icon big" href="offset/{{inc .week.Offset}}">
                 <svg>
                     <use xlink:href="assets/img/solid.svg#chevron-right"></use>
                 </svg>
@@ -19,7 +19,7 @@
         </div>
 
         <div class="week">
-        {{ range .Meals }}
+        {{ range .week.Meals }}
             <a href="planner/{{.Id}}" class="card card-1 meal {{if eq (isToday .Date) true}}current{{end}}">
                 <div class="day">
                     <div>{{ .Date.Format "Mon" }}</div>

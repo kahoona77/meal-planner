@@ -26,7 +26,7 @@ func MealOfDay(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.Render(http.StatusOK, "meal-of-day.html", mealOfDay)
+	return ctx.RenderTemplate(http.StatusOK, "meal-of-day.html", core.TemplateData{"mod": mealOfDay})
 }
 
 func SelectMealOfDayView(ctx *core.WebContext) error {
@@ -44,12 +44,12 @@ func SelectMealOfDayView(ctx *core.WebContext) error {
 		return err
 	}
 
-	data := map[string]interface{}{
+	data := core.TemplateData{
 		"mealOfDay": mealOfDay,
 		"meals":     allMeals,
 	}
 
-	return ctx.Render(http.StatusOK, "meal-of-day-select.html", data)
+	return ctx.RenderTemplate(http.StatusOK, "meal-of-day-select.html", data)
 }
 
 func SelectMealOfDay(ctx *core.WebContext) error {
