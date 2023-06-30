@@ -43,3 +43,9 @@ func (r *Repository) DeleteMeal(id int64) error {
 	_, err := r.db.Exec("DELETE FROM meals WHERE id=$1", id)
 	return err
 }
+
+func (r *Repository) GetCategories() ([]*Category, error) {
+	var categories []*Category
+	err := r.db.Select(&categories, "SELECT * FROM categories")
+	return categories, err
+}

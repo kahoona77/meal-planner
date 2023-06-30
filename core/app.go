@@ -6,11 +6,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
+	"io/fs"
 	"net/http"
 	"os"
 )
 
-func InitApp(rendererFactory CreateRendererFunc) *App {
+func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
 	formatter := &logrus.TextFormatter{}
 	formatter.ForceColors = true
 	formatter.FullTimestamp = true
@@ -25,6 +26,10 @@ func InitApp(rendererFactory CreateRendererFunc) *App {
 	// use sqlx.Open() for sql.Open() semantics
 	db, err := sqlx.Connect("sqlite3", conf.DbFile)
 	if err != nil {
+		panic(err)
+	}
+
+	if err := runMigrations(db.DB, migrationsFs); err != nil {
 		panic(err)
 	}
 
