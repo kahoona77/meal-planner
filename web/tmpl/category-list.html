@@ -1,0 +1,27 @@
+{{ define "content"}}
+    <div class="categories">
+
+        <ul class="">
+        {{ range .categories }}
+            <li>{{ .Name }}</li>
+
+        {{end}}
+        </ul>
+
+        <h1 class="text-3xl font-bold underline">
+            Hello world!
+        </h1>
+
+        <form class="add-category">
+            <input type="text" placeholder="Category Names" />
+            <a href="categories/new" class="btn icon">
+                <svg>
+                    <use xlink:href='{{ publicUrl "assets/img/solid.svg#plus"}}'></use>
+                </svg>
+                Add Category
+            </a>
+        </form>
+
+
+    </div>
+{{end}}
