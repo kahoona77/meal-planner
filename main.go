@@ -41,6 +41,8 @@ func main() {
 	root.POST("/meals/:id/delete", views.MealDelete)
 
 	root.GET("/categories", views.Categories)
+	root.POST("/categories", views.CategorySave)
+	root.POST("/categories/:id", views.CategorySave)
 
 	// Listen and server on 0.0.0.0:8080
 	app.Logger.Fatal(app.Start(fmt.Sprintf(":%s", app.Ctx.Config().Port)))
