@@ -96,7 +96,12 @@ func (t *HtmlRenderer) loadTemplates() {
 				asset = t.manifest.File(asset)
 			}
 
-			return fmt.Sprintf("%s%s/%s", t.devServerUrl, t.basePath, asset)
+			serverUrl := t.devServerUrl
+			if strings.Contains(asset, ".svg") {
+				serverUrl = ""
+			}
+
+			return fmt.Sprintf("%s%s/%s", serverUrl, t.basePath, asset)
 		},
 	}
 

@@ -1,26 +1,26 @@
 {{ define "content"}}
-    <div class="categories">
+    <div class="categories mx-2">
 
-        <ul class="">
-        {{ range .categories }}
+        <form class="flex flex-row" action="categories" method="post">
+            <div class="basis-1/4">
+                <input type="text" name="name" placeholder="Category" />
+            </div>
+            <div class="basis-3/4">
+                <button type="submit" class="btn-primary">
+                    <svg class="fill-white w-4 h-4 inline">
+                        <use xlink:href='{{ publicUrl "assets/img/solid.svg#plus"}}'></use>
+                    </svg>
+                    Add Category
+                </button>
+            </div>
+        </form>
+
+        <ul class="mx-1 my-2 list-disc list-inside">
+            {{ range .categories }}
             <li>{{ .Name }}</li>
 
-        {{end}}
+            {{end}}
         </ul>
-
-        <h1 class="text-3xl font-bold underline">
-            Hello world!
-        </h1>
-
-        <form class="add-category">
-            <input type="text" placeholder="Category Names" />
-            <a href="categories/new" class="btn icon">
-                <svg>
-                    <use xlink:href='{{ publicUrl "assets/img/solid.svg#plus"}}'></use>
-                </svg>
-                Add Category
-            </a>
-        </form>
 
 
     </div>
