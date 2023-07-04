@@ -44,28 +44,28 @@ func (r *Repository) DeleteMeal(id int64) error {
 	return err
 }
 
-func (r *Repository) GetCategories() ([]*Category, error) {
-	var categories []*Category
-	err := r.db.Select(&categories, "SELECT * FROM categories")
-	return categories, err
+func (r *Repository) GetTags() ([]*Tag, error) {
+	var tags []*Tag
+	err := r.db.Select(&tags, "SELECT * FROM tags")
+	return tags, err
 }
 
-func (r *Repository) GetCategory(id int64) (*Category, error) {
-	var category Category
-	err := r.db.Get(&category, "SELECT * FROM categories WHERE id=$1", id)
-	return &category, err
+func (r *Repository) GetTag(id int64) (*Tag, error) {
+	var tag Tag
+	err := r.db.Get(&tag, "SELECT * FROM tags WHERE id=$1", id)
+	return &tag, err
 }
 
-const categoriesInsert = `INSERT INTO categories (name, color) VALUES (:name, :color)`
+const tagsInsert = `INSERT INTO tags (name, color) VALUES (:name, :color)`
 
-func (r *Repository) CreateCategory(category *Category) error {
-	_, err := r.db.NamedExec(categoriesInsert, category)
+func (r *Repository) CreateTag(tag *Tag) error {
+	_, err := r.db.NamedExec(tagsInsert, tag)
 	return err
 }
 
-const categoriesUpdate = `UPDATE categories SET name=:name, color=:color WHERE id = :id`
+const tagsUpdate = `UPDATE tags SET name=:name, color=:color WHERE id = :id`
 
-func (r *Repository) UpdateCategory(category *Category) error {
-	_, err := r.db.NamedExec(categoriesUpdate, category)
+func (r *Repository) UpdateTag(tag *Tag) error {
+	_, err := r.db.NamedExec(tagsUpdate, tag)
 	return err
 }
