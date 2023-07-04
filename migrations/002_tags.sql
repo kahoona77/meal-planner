@@ -1,15 +1,9 @@
 -- +goose Up
-CREATE TABLE categories
-(
-    id    INTEGER PRIMARY KEY AUTOINCREMENT,
-    name  VARCHAR(50) NOT NULL DEFAULT '',
-    color VARCHAR(50) NOT NULL DEFAULT ''
-);
-
 CREATE TABLE tags
 (
     id   INTEGER PRIMARY KEY AUTOINCREMENT,
-    name VARCHAR(50) NOT NULL DEFAULT ''
+    name VARCHAR(50) NOT NULL DEFAULT '',
+    color VARCHAR(50) NOT NULL DEFAULT ''
 );
 
 CREATE TABLE meal_tags
@@ -22,4 +16,3 @@ CREATE TABLE meal_tags
 -- +goose Down
 DROP TABLE meal_tags;
 DROP TABLE tags;
-DROP TABLE categories;

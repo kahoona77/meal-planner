@@ -12,7 +12,7 @@ export default defineConfig({
             // overwrite default .html entry
             input: [
                 '/src/index.css',
-                '/src/my-element.ts',
+                '/src/index.ts',
             ]
         },
     },
