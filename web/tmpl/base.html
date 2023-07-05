@@ -29,15 +29,29 @@
     </div>
 
 
-
-    <div class="nav-bar">
-        <a href="">
-            Planner
-        </a>
-        <a href="meals">
-            Meals
-        </a>
+    <div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-primary text-white border-t border-gray-200">
+        <div class="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+            <a href="" type="button" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group">
+                <svg class="w-5 h-5 mb-2 text-white group-hover:text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                    <use xlink:href='{{ publicUrl "assets/img/regular.svg#calendar-days"}}'></use>
+                </svg>
+                <span class="text-sm text-white group-hover:text-primary">Planner</span>
+            </a>
+            <a href="meals" type="button" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group">
+                <svg class="w-5 h-5 mb-2 text-white group-hover:text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                    <use xlink:href='{{ publicUrl "assets/img/solid.svg#burger"}}'></use>
+                </svg>
+                <span class="text-sm text-white group-hover:text-primary">Meals</span>
+            </a>
+            <a href="tags" type="button" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group">
+                <svg class="w-5 h-5 mb-2 text-white group-hover:text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                    <use xlink:href='{{ publicUrl "assets/img/solid.svg#tags"}}'></use>
+                </svg>
+                <span class="text-sm text-white group-hover:text-primary">Tags</span>
+            </a>
+        </div>
     </div>
+
 
     {{if .isDev}}
     <script type="module" src="http://localhost:5173{{ .basePath }}/assets/@vite/client"></script>
