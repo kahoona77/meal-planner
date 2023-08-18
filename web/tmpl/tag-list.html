@@ -25,7 +25,7 @@
                     <toggle-visibility selector="#tag-{{ $index }} form">
                         <button class="absolute top-2 right-2">
                             <svg class="fill-neutral-500 w-5 h-5 inline">
-                                <use xlink:href='{{ publicUrl "assets/img/regular.svg#edit"}}'></use>
+                                <use xlink:href='{{ publicUrl "assets/img/regular.svg#pen-to-square"}}'></use>
                             </svg>
                         </button>
                     </toggle-visibility>
@@ -38,7 +38,7 @@
                         </div>
                         <div>
                             <label class="inline" for="color">Tag Color:</label>
-                            <input type="color" id="color" name="color" value="{{$tag.Color}}" />
+                            <input type="color" id="color" name="color" value="{{$tag.Color}}" class="p-0" />
                         </div>
 
                         <div class="text-center">

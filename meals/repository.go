@@ -69,3 +69,31 @@ func (r *Repository) UpdateTag(tag *Tag) error {
 	_, err := r.db.NamedExec(tagsUpdate, tag)
 	return err
 }
+
+func (r *Repository) GetMealTags(mealId int64) ([]*MealTag, error) {
+	var mealTags []*MealTag
+	err := r.db.Select(&mealTags, "SELECT * FROM meal_tags left join tags t on t.id = meal_tags.tag_id where meal_id=$1", mealId)
+	return mealTags, err
+}
+
+const mealTagsInsert = `INSERT INTO meal_tags (meal_id, tag_id) VALUES (:meal_id, :tag_id)`
+
+func (r *Repository) SetTagsForMeal(meal *Meal, tags []*Tag) error {
+	// delete old tags
+	_, err := r.db.Exec("DELETE FROM meal_tags WHERE meal_id=$1", meal.Id)
+	if err != nil {
+		return err
+	}
+
+	mealTags := make([]*MealTag, len(tags))
+	for i, tag := range tags {
+		mealTags[i] = &MealTag{
+			MealId: meal.Id,
+			TagId:  tag.Id,
+		}
+	}
+
+	// insert new tags
+	_, err = r.db.NamedExec(mealTagsInsert, mealTags)
+	return err
+}

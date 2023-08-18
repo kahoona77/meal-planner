@@ -1,29 +1,86 @@
 import {LitElement, css, html, nothing} from 'lit'
 import {customElement, property} from 'lit/decorators.js'
 import {classMap} from 'lit/directives/class-map.js';
+import {ComplexAttributeConverter} from "@lit/reactive-element";
+
+class SelectOption {
+    constructor(public id: string, public name: string) {
+    }
+}
+
+class SelectOptionsConverter implements ComplexAttributeConverter<Array<SelectOption>> {
+    fromAttribute(value: string) {
+        let selected: Array<any> = [];
+        if (value) {
+            selected = JSON.parse(value)
+        }
+
+        if (selected) {
+            selected = selected.map((s: any) => new SelectOption(s.id, s.name));
+        } else {
+            selected = [];
+        }
+
+        return selected;
+    }
+
+    toAttribute(selected: Array<SelectOption>) {
+        return JSON.stringify(selected);
+    }
+}
 
 @customElement('multi-select')
 export class MultiSelect extends LitElement {
+    static formAssociated = true;
+    private internals: ElementInternals;
 
-    @property({type: Array<string>})
-    selected: string[] = ["Blue", "Green", "Black"];
+    constructor() {
+        super();
+        this.internals = this.attachInternals();
+    }
 
-    @property({type: Array<string>})
-    items: string[] = ["Blue", "Green", "Black", "Yellow", "Red", "Pink", "Grey", "Purple"];
+    @property({
+        attribute: 'value',
+        type: Array<SelectOption>,
+        converter: new SelectOptionsConverter(),
+    })
+    selected: Array<SelectOption> = [];
+
+    @property({
+        attribute: 'options',
+        type: Array<SelectOption>,
+        converter: new SelectOptionsConverter(),
+    })
+    items: Array<SelectOption> = [];
 
     @property({attribute: false})
     showItems: boolean = false;
 
-    private removeSelected(event:Event, selectedItem: string) {
+    get form() {
+        return this.internals.form;
+    }
+
+    get name() {
+        return this.getAttribute('name')
+    };
+
+    private updateFormValue(): void {
+        const value = new SelectOptionsConverter().toAttribute(this.selected);
+        this.internals.setFormValue(value);
+    }
+
+    private removeSelected(event: Event, selectedItem: SelectOption) {
         event.stopPropagation();
         const indexToRemove = this.selected.indexOf(selectedItem);
         this.selected = [...this.selected.slice(0, indexToRemove), ...this.selected.slice(indexToRemove + 1)];
+        this.updateFormValue();
         this.showItems = false;
     }
 
-    private addItem(item: string) {
+    private addItem(item: SelectOption) {
         if (this.selected.indexOf(item) < 0) {
             this.selected = [...this.selected, item];
+            this.updateFormValue();
             this.showItems = false;
         }
     }
@@ -38,7 +95,7 @@ export class MultiSelect extends LitElement {
                             ${this.selected.map((select) =>
                                     html`
                                         <div class="item">
-                                            <div class="text">${select}</div>
+                                            <div class="text">${select.name}</div>
                                             <svg @click=${(event: Event) => this.removeSelected(event, select)}
                                                  xmlns="http://www.w3.org/2000/svg" width="100%" height="100%"
                                                  fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -62,12 +119,16 @@ export class MultiSelect extends LitElement {
                     </div>
 
                     ${
-                this.showItems ?
-                        html`
-                            <div class="items-container">
-                                ${this.items.map((item) => html`
-                                    <div class="${classMap({item: true, disabled: this.selected.indexOf(item) >= 0})}" @click=${() => this.addItem(item)}>${item}</div>`)}
-                            </div>` : nothing
+                            this.showItems ?
+                                    html`
+                                        <div class="items-container">
+                                            ${this.items.map((item) => html`
+                                                <div class="${classMap({
+                                                    item: true,
+                                                    disabled: this.selected.indexOf(item) >= 0
+                                                })}" @click=${() => this.addItem(item)}>${item.name}
+                                                </div>`)}
+                                        </div>` : nothing
                     }
 
                 </div>
