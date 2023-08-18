@@ -16,7 +16,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY web/tmpl/ /app/web/tmpl/
 COPY web/assets/ /app/web/assets/
-COPY --from=frontendBuilder /web/assets/dist/ ${WORKDIR}/web/assets/dist
+COPY --from=frontendBuilder /web/assets/dist/ app/web/assets/dist
 COPY --from=builder /go/src/app/meal-planner /app/
 
 ENTRYPOINT ["/app/meal-planner"]
