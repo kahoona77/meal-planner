@@ -7,7 +7,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"html/template"
 	"io"
-	"io/fs"
 	"meal-planner/core"
 	"os"
 	"path/filepath"
@@ -44,10 +43,6 @@ func NewRenderer(basePath string, manifest Manifest, isDev bool) *HtmlRenderer {
 func CreateRenderer(ctx *core.Ctx) (core.HtmlRenderer, error) {
 	manifest := EmptyManifest()
 	f := os.DirFS("./")
-	fs.WalkDir(f, ".", func(p string, d fs.DirEntry, err error) error {
-		logrus.Infof("%s", p)
-		return nil
-	})
 
 	if !ctx.Config().IsDev {
 		var err error
