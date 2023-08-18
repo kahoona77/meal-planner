@@ -16,12 +16,13 @@
                 </div>
                 <div class="title">
                     <div class="text">{{ .Name }}</div>
-                    <div class="category">Nudeln</div>
                 </div>
                 <div class="tags">
-                    <div>einfach</div>
-                    <div>vegan</div>
-                    <div>lecker</div>
+                    {{ range .Tags }}
+                    <div style="background-color: {{ .Color }}">
+                        <span class="text-white ">{{ .Name }}</span>
+                    </div>
+                    {{end}}
                 </div>
             </div>
         {{end}}

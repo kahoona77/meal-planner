@@ -15,8 +15,8 @@
                 <input type="text" id="name" name="name" value="{{.meal.Name}}" />
             </div>
             <div class="my-2">
-                <label for="name">Tags</label>
-                <multi-select options="Blue, Green, Yellow, Blue"></multi-select>
+                <label>Tags</label>
+                <multi-select id="tags" name="tags" value='{{ json .mealTags }}' options='{{ json .tags }}'></multi-select>
             </div>
             <div class="my-2">
                 <label for="description">Beschreibung</label>

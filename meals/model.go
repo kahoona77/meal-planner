@@ -16,3 +16,9 @@ type Tag struct {
 	Name  string `db:"name"`
 	Color string `db:"color"`
 }
+
+type MealTag struct {
+	MealId int64 `db:"meal_id"`
+	TagId  int64 `db:"tag_id"`
+	Tag
+}
