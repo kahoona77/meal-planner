@@ -47,7 +47,7 @@ func CreateRenderer(ctx *core.Ctx) (core.HtmlRenderer, error) {
 		var err error
 		manifest, err = ParseManifest("web/assets/dist/manifest.json", f)
 		if err != nil {
-			return nil, fmt.Errorf("cloud not prase manifest-file: %v", err)
+			return nil, fmt.Errorf("could not prase manifest-file: %v", err)
 		}
 	}
 
