@@ -16,7 +16,7 @@ type ManifestEntry struct {
 func (m Manifest) File(key string) string {
 	entry, ok := m[key]
 	if !ok {
-		return ""
+		return key
 	}
 	return entry.File
 }
