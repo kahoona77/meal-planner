@@ -30,13 +30,13 @@ func TestManifest_File(t *testing.T) {
 			name: "with non-existing key",
 			m:    Manifest{"test": {File: "path/file.js", Src: "src/file.ts"}},
 			key:  "foo",
-			want: "",
+			want: "foo",
 		},
 		{
 			name: "with empty manifest",
 			m:    EmptyManifest(),
 			key:  "foo",
-			want: "",
+			want: "foo",
 		},
 		{
 			name: "with empty entry",
