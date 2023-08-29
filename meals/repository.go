@@ -16,7 +16,18 @@ func NewRepository(c core.Context) *Repository {
 const mealsInsert = `INSERT INTO meals (name, description, image_file_id) VALUES (:name, :description, :image_file_id)`
 
 func (r *Repository) CreateMeal(meal *Meal) error {
-	_, err := r.db.NamedExec(mealsInsert, meal)
+	result, err := r.db.NamedExec(mealsInsert, meal)
+	if err != nil {
+		return err
+	}
+
+	// set inserted Id
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	meal.Id = id
+
 	return err
 }
 
