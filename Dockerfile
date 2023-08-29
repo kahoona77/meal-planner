@@ -1,5 +1,5 @@
 FROM node:18-alpine AS frontendBuilder
-COPY web/assets/ /web/assets/
+COPY web/ /web/
 WORKDIR /web/assets
 RUN npm install
 RUN npm run build
