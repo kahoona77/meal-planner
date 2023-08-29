@@ -116,7 +116,7 @@ button {
 
 .flab {
     position: absolute;
-    bottom: 55px;
+    bottom: 65px;
     right: 15px;
     height: 40px;
     width: 40px;
@@ -285,9 +285,9 @@ button {
 
     .meal {
         width: var(--card-width);
-        height: var(--card-height);
         margin: .25rem;
         padding: .25rem;
+        padding-bottom: .5rem;
         cursor: pointer;
 
         .image {
@@ -323,18 +323,13 @@ button {
             white-space: nowrap;
             overflow: hidden;
 
-            @media (max-width: 768px) {
-                flex-wrap: wrap;
-            }
 
             .text {
-                max-width: 15rem;
+                max-width: 100%;
                 overflow: hidden;
                 text-overflow: ellipsis;
 
-                @media (max-width: 768px) {
-                    width: var(--card-width);
-                }
+
             }
 
             .category {
@@ -349,11 +344,12 @@ button {
         }
 
         .tags {
-            margin: 1rem 0;
+            margin: 0.25rem 0;
             font-size: 12px;
             line-height: 12px;
             display: flex;
             flex-wrap: wrap;
+            row-gap: .25rem;
 
             div {
                 background-color: var(--grey-light);
