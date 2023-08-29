@@ -96,15 +96,19 @@ func (r *Repository) SetTagsForMeal(meal *Meal, tags []*Tag) error {
 		return err
 	}
 
-	mealTags := make([]*MealTag, len(tags))
-	for i, tag := range tags {
-		mealTags[i] = &MealTag{
-			MealId: meal.Id,
-			TagId:  tag.Id,
+	if len(tags) > 0 {
+		mealTags := make([]*MealTag, len(tags))
+		for i, tag := range tags {
+			mealTags[i] = &MealTag{
+				MealId: meal.Id,
+				TagId:  tag.Id,
+			}
 		}
+
+		// insert new tags
+		_, err = r.db.NamedExec(mealTagsInsert, mealTags)
+		return err
 	}
 
-	// insert new tags
-	_, err = r.db.NamedExec(mealTagsInsert, mealTags)
-	return err
+	return nil
 }

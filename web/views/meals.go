@@ -90,15 +90,19 @@ func MealSave(ctx *core.WebContext) error {
 	meal.Name = ctx.FormValue("name")
 	meal.Description = ctx.FormValue("description")
 
-	var options []*SelectOption
-	err := json.Unmarshal([]byte(ctx.FormValue("tags")), &options)
-	if err != nil {
-		return err
-	}
-	tags := make([]*meals.Tag, len(options))
-	for i, option := range options {
-		id, _ := strconv.ParseInt(option.Id, 10, 64)
-		tags[i] = &meals.Tag{Id: id, Name: option.Name}
+	var tags []*meals.Tag
+	tagsJson := ctx.FormValue("tags")
+	if tagsJson != "" {
+		var options []*SelectOption
+		err := json.Unmarshal([]byte(tagsJson), &options)
+		if err != nil {
+			return err
+		}
+		tags = make([]*meals.Tag, len(options))
+		for i, option := range options {
+			id, _ := strconv.ParseInt(option.Id, 10, 64)
+			tags[i] = &meals.Tag{Id: id, Name: option.Name}
+		}
 	}
 
 	imageFile, err := getNewImageFile(ctx, "image")
