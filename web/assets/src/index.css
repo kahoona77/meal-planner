@@ -65,7 +65,6 @@ body {
     color: #4a4a4a;
     max-width: var(--container-with);
     margin: 0 auto;
-    background-color: var(--grey-lightest);
     padding: 0;
 }
 
@@ -204,7 +203,6 @@ button {
     padding: 0 .5rem;
     max-height: calc(100vh - 100px);
     overflow-y: auto;
-    background-color: white;
 }
 
 .planner-header {

@@ -19,7 +19,7 @@
     {{ template "site-header" .}}
 
 </head>
-<body>
+<body class="bg-gray-50">
     <div>
         {{ template "header" .}}
     </div>
@@ -29,7 +29,7 @@
     </div>
 
 
-    <div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-primary text-white border-t border-gray-200">
+    <div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-primary text-white border-t border-gray-200 print:hidden">
         <div class="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
             <a href="" type="button" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group">
                 <svg class="w-5 h-5 mb-2 text-white group-hover:text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
