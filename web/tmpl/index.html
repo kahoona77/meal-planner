@@ -1,7 +1,7 @@
 {{ define "content"}}
     <div class="planner">
         <div class="planner-header">
-            <a class="icon big" href="offset/{{dec .week.Offset}}">
+            <a class="icon big print:hidden" href="offset/{{dec .week.Offset}}">
                 <svg>
                     <use xlink:href="assets/img/solid.svg#chevron-left"></use>
                 </svg>
@@ -11,32 +11,30 @@
                 {{ .week.Start.Format "02.01.2006" }} - {{ .week.End.Format "02.01.2006" }}
             </div>
 
-            <a class="icon big" href="offset/{{inc .week.Offset}}">
+            <a class="icon big print:hidden" href="offset/{{inc .week.Offset}}">
                 <svg>
                     <use xlink:href="assets/img/solid.svg#chevron-right"></use>
                 </svg>
             </a>
         </div>
 
-        <div class="week">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4 ">
         {{ range .week.Meals }}
-            <a href="planner/{{.Id}}" class="card card-1 meal {{if eq (isToday .Date) true}}current{{end}}">
-                <div class="day">
-                    <div>{{ .Date.Format "Mon" }}</div>
-                    <div>{{ .Date.Format "02.01." }}</div>
+            <a href="planner/{{.Id}}" class="rounded overflow-hidden bg-white shadow-lg grid grid-cols-2 md:block">
+                <div class="px-4 py-2 text-center">
+                    <p class="text-gray-700 text-base">
+                        {{ .Date.Format "Mon" }} {{ .Date.Format "02.01.2006" }}
+                    </p>
+                    <div class="font-bold text-xl mb-2">{{.Meal.Name}}</div>
                 </div>
-                <div class="meal-name">
-                    {{.Meal.Name}}
-                </div>
-                <div class="image">
+
+                <div class="w-full text-center">
                     {{ if .Meal.ImageFileId.Valid }}
-                        <img src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
+                        <img class="w-full h-24 md:h-64 object-cover object-center" src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
                     {{ else }}
-                        <div class="placeholder">
-                            <svg>
-                                <use xlink:href="assets/img/solid.svg#hamburger"></use>
-                            </svg>
-                        </div>
+                    <svg class="w-full text-gray-300 h-24 md:h-48" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <use xlink:href='{{ publicUrl "assets/img/solid.svg#burger"}}'></use>
+                    </svg>
                     {{ end }}
                 </div>
             </a>
