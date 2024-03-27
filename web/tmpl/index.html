@@ -1,18 +1,18 @@
 {{ define "content"}}
-    <div class="planner">
-        <div class="planner-header">
-            <a class="icon big print:hidden" href="offset/{{dec .week.Offset}}">
-                <svg>
+    <div class="">
+        <div class="flex w-full my-2">
+            <a class="print:hidden" href="offset/{{dec .week.Offset}}">
+                <svg class="w-32 h-8">
                     <use xlink:href="assets/img/solid.svg#chevron-left"></use>
                 </svg>
             </a>
 
-            <div>
+            <div class="flex-1 text-center whitespace-nowrap">
                 {{ .week.Start.Format "02.01.2006" }} - {{ .week.End.Format "02.01.2006" }}
             </div>
 
-            <a class="icon big print:hidden" href="offset/{{inc .week.Offset}}">
-                <svg>
+            <a class="print:hidden" href="offset/{{inc .week.Offset}}">
+                <svg class="w-32 h-8">
                     <use xlink:href="assets/img/solid.svg#chevron-right"></use>
                 </svg>
             </a>
@@ -38,8 +38,11 @@
                     {{ end }}
                 </div>
             </a>
-
         {{end}}
+        </div>
+
+        <div class="text-center">
+            <a href=""
         </div>
     </div>
 {{end}}
