@@ -63,8 +63,7 @@ body {
     font-size: 16px;
     line-height: 1.5;
     color: #4a4a4a;
-    max-width: var(--container-with);
-    margin: 0 auto;
+    margin: 0;
     padding: 0;
 }
 
@@ -200,6 +199,8 @@ button {
 }
 
 .content {
+    max-width: var(--container-with);
+    margin: 0 auto;
     padding: 0 .5rem;
     max-height: calc(100vh - 100px);
     overflow-y: auto;
