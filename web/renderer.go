@@ -109,6 +109,16 @@ func (t *HtmlRenderer) loadTemplates() {
 			a, _ := json.Marshal(v)
 			return template.JS(a)
 		},
+		"formatWeekday": func(weekday interface{}) string {
+			if w, ok := weekday.(int); ok {
+				return formatWeekday(w)
+			}
+			if w, ok := weekday.(time.Weekday); ok {
+				return formatWeekday(int(w))
+			}
+
+			return ""
+		},
 	}
 
 	views, _ := filepath.Glob(templatesDir + "**/*" + ext)

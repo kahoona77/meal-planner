@@ -1,0 +1,20 @@
+{{ define "content"}}
+{{$tags := .tags}}
+    <form class="mb-32" method="post">
+        <div class="text-center text-lg m-4">
+            {{ .week.Start.Format "02.01.2006" }} - {{ .week.End.Format "02.01.2006" }}
+        </div>
+        {{ range .week.Days }}
+        <div class="grid md:grid-cols-[8rem_1fr] gap-4 items-center">
+            <div class="w-12">{{ formatWeekday .Weekday }}</div>
+            <div class="w-full"><multi-select id="tags_{{ .Weekday }}" name="tags_{{ .Weekday }}" value='{{ json .Tags }}' options='{{ json $tags }}'></multi-select></div>
+        </div>
+        {{ end }}
+
+        <div class="text-center my-6">
+            <button type="submit" class="bg-primary hover:bg-sky-900 font-bold uppercase text-white text-sm px-8 py-3 rounded-lg">🪄 Generate</button>
+        </div>
+    </form>
+
+
+{{end}}

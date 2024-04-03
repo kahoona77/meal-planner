@@ -23,7 +23,7 @@
             <a href="planner/{{.Id}}" class="rounded overflow-hidden bg-white shadow-lg grid grid-cols-2 md:block">
                 <div class="px-4 py-2 text-center">
                     <p class="text-gray-700 text-base">
-                        {{ .Date.Format "Mon" }} {{ .Date.Format "02.01.2006" }}
+                        {{ formatWeekday .Date.Weekday }} {{ .Date.Format "02.01.2006" }}
                     </p>
                     <div class="font-bold text-xl mb-2">{{.Meal.Name}}</div>
                 </div>
@@ -41,8 +41,8 @@
         {{end}}
         </div>
 
-        <div class="text-center">
-            <a href=""
+        <div class="text-center my-6">
+            <a href="wizard/{{ .week.Offset }}" class="bg-primary hover:bg-sky-900 font-bold uppercase text-white text-sm px-8 py-3 rounded-lg">🪄 Create new</a>
         </div>
     </div>
 {{end}}
