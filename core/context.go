@@ -1,10 +1,12 @@
 package core
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
+	"io"
 	"strconv"
 )
 
@@ -13,10 +15,10 @@ type Context interface {
 	Config() *AppConfig
 }
 
-func CreateCtx(ctx *Ctx) echo.MiddlewareFunc {
+func CreateCtx(ctx *Ctx, renderer HtmlRenderer) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			cc := &WebContext{Context: c, Ctx: ctx}
+			cc := &WebContext{Context: c, Ctx: ctx, renderer: renderer}
 			return next(cc)
 		}
 	}
@@ -42,6 +44,7 @@ func (ctx *Ctx) Close() {
 }
 
 type WebContext struct {
+	renderer HtmlRenderer
 	echo.Context
 	*Ctx
 }
@@ -55,3 +58,22 @@ func (ctx *WebContext) ParamAsInt(name string) int {
 func (ctx *WebContext) Redirect(code int, name string) error {
 	return ctx.Context.Redirect(code, fmt.Sprintf("%s%s", ctx.config.BasePath, name))
 }
+
+func (ctx *WebContext) RenderTemplate(code int, name string, data TemplateData) (err error) {
+	if ctx.renderer == nil {
+		return echo.ErrRendererNotRegistered
+	}
+	buf := new(bytes.Buffer)
+	if err = ctx.renderer.Render(buf, name, data, ctx); err != nil {
+		return
+	}
+	return ctx.HTMLBlob(code, buf.Bytes())
+}
+
+type HtmlRenderer interface {
+	Render(w io.Writer, name string, data TemplateData, ctx *WebContext) error
+}
+
+type CreateRendererFunc func(ctx *Ctx) (HtmlRenderer, error)
+
+type TemplateData map[string]any

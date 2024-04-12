@@ -26,7 +26,7 @@ func MealOfDay(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.Render(http.StatusOK, "meal-of-day.html", mealOfDay)
+	return ctx.RenderTemplate(http.StatusOK, "meal-of-day.html", core.TemplateData{"mod": mealOfDay})
 }
 
 func SelectMealOfDayView(ctx *core.WebContext) error {
@@ -44,12 +44,12 @@ func SelectMealOfDayView(ctx *core.WebContext) error {
 		return err
 	}
 
-	data := map[string]interface{}{
+	data := core.TemplateData{
 		"mealOfDay": mealOfDay,
 		"meals":     allMeals,
 	}
 
-	return ctx.Render(http.StatusOK, "meal-of-day-select.html", data)
+	return ctx.RenderTemplate(http.StatusOK, "meal-of-day-select.html", data)
 }
 
 func SelectMealOfDay(ctx *core.WebContext) error {
@@ -57,10 +57,8 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 
 	id := ctx.Param("id")
 	mealOfDay, err := repo.GetMealOfDay(id)
-	createNew := false
 	if err != nil {
 		mealOfDay = planner.NewMealFromId(id)
-		createNew = true
 	}
 
 	selected := ctx.FormValue("selected")
@@ -71,14 +69,8 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 		mealOfDay.MealId = sql.NullInt64{Int64: int64(mealId), Valid: true}
 	}
 
-	if createNew {
-		if err := repo.CreateMealOfDay(mealOfDay); err != nil {
-			return err
-		}
-	} else {
-		if err := repo.UpdateMealOfDay(mealOfDay); err != nil {
-			return err
-		}
+	if err := repo.UpsertMealOfDay(mealOfDay); err != nil {
+		return err
 	}
 
 	return ctx.Redirect(http.StatusFound, "/")

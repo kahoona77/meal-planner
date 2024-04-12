@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/gommon/random"
 )
 
 type (
@@ -12,16 +11,23 @@ type (
 		Skipper Skipper
 
 		// Generator defines a function to generate an ID.
-		// Optional. Default value random.String(32).
+		// Optional. Defaults to generator for random string of length 32.
 		Generator func() string
+
+		// RequestIDHandler defines a function which is executed for a request id.
+		RequestIDHandler func(echo.Context, string)
+
+		// TargetHeader defines what header to look for to populate the id
+		TargetHeader string
 	}
 )
 
 var (
 	// DefaultRequestIDConfig is the default RequestID middleware config.
 	DefaultRequestIDConfig = RequestIDConfig{
-		Skipper:   DefaultSkipper,
-		Generator: generator,
+		Skipper:      DefaultSkipper,
+		Generator:    generator,
+		TargetHeader: echo.HeaderXRequestID,
 	}
 )
 
@@ -39,6 +45,9 @@ func RequestIDWithConfig(config RequestIDConfig) echo.MiddlewareFunc {
 	if config.Generator == nil {
 		config.Generator = generator
 	}
+	if config.TargetHeader == "" {
+		config.TargetHeader = echo.HeaderXRequestID
+	}
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -48,11 +57,14 @@ func RequestIDWithConfig(config RequestIDConfig) echo.MiddlewareFunc {
 
 			req := c.Request()
 			res := c.Response()
-			rid := req.Header.Get(echo.HeaderXRequestID)
+			rid := req.Header.Get(config.TargetHeader)
 			if rid == "" {
 				rid = config.Generator()
 			}
-			res.Header().Set(echo.HeaderXRequestID, rid)
+			res.Header().Set(config.TargetHeader, rid)
+			if config.RequestIDHandler != nil {
+				config.RequestIDHandler(c, rid)
+			}
 
 			return next(c)
 		}
@@ -60,5 +72,5 @@ func RequestIDWithConfig(config RequestIDConfig) echo.MiddlewareFunc {
 }
 
 func generator() string {
-	return random.String(32)
+	return randomString(32)
 }

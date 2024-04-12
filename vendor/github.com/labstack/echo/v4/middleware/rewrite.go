@@ -27,7 +27,7 @@ type (
 		// Example:
 		// "^/old/[0.9]+/":     "/new",
 		// "^/api/.+?/(.*)":     "/v2/$1",
-		RegexRules map[*regexp.Regexp]string `yaml:"regex_rules"`
+		RegexRules map[*regexp.Regexp]string `yaml:"-"`
 	}
 )
 
@@ -72,9 +72,9 @@ func RewriteWithConfig(config RewriteConfig) echo.MiddlewareFunc {
 				return next(c)
 			}
 
-			req := c.Request()
-			// Set rewrite path and raw path
-			rewritePath(config.RegexRules, req)
+			if err := rewriteURL(config.RegexRules, c.Request()); err != nil {
+				return err
+			}
 			return next(c)
 		}
 	}

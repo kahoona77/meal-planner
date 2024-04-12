@@ -1,47 +1,48 @@
 {{ define "content"}}
-    <div class="planner">
-        <div class="planner-header">
-            <a class="icon big" href="offset/{{dec .Offset}}">
-                <svg>
+    <div class="">
+        <div class="flex w-full my-2">
+            <a class="print:hidden" href="offset/{{dec .week.Offset}}">
+                <svg class="w-32 h-8">
                     <use xlink:href="assets/img/solid.svg#chevron-left"></use>
                 </svg>
             </a>
 
-            <div>
-                {{ .Start.Format "02.01.2006" }} - {{ .End.Format "02.01.2006" }}
+            <div class="flex-1 text-center whitespace-nowrap">
+                {{ .week.Start.Format "02.01.2006" }} - {{ .week.End.Format "02.01.2006" }}
             </div>
 
-            <a class="icon big" href="offset/{{inc .Offset}}">
-                <svg>
+            <a class="print:hidden" href="offset/{{inc .week.Offset}}">
+                <svg class="w-32 h-8">
                     <use xlink:href="assets/img/solid.svg#chevron-right"></use>
                 </svg>
             </a>
         </div>
 
-        <div class="week">
-        {{ range .Meals }}
-            <a href="planner/{{.Id}}" class="card card-1 meal {{if eq (isToday .Date) true}}current{{end}}">
-                <div class="day">
-                    <div>{{ .Date.Format "Mon" }}</div>
-                    <div>{{ .Date.Format "02.01." }}</div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4 ">
+        {{ range .week.Meals }}
+            <a href="planner/{{.Id}}" class="rounded overflow-hidden bg-white shadow-lg grid grid-cols-2 md:block">
+                <div class="px-4 py-2 text-center">
+                    <p class="text-gray-700 text-base">
+                        {{ formatWeekday .Date.Weekday }} {{ .Date.Format "02.01.2006" }}
+                    </p>
+                    <div class="font-bold text-xl mb-2">{{.Meal.Name}}</div>
                 </div>
-                <div class="meal-name">
-                    {{.Meal.Name}}
-                </div>
-                <div class="image">
+
+                <div class="w-full text-center">
                     {{ if .Meal.ImageFileId.Valid }}
-                        <img src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
+                        <img class="w-full h-24 md:h-64 object-cover object-center" src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
                     {{ else }}
-                        <div class="placeholder">
-                            <svg>
-                                <use xlink:href="assets/img/solid.svg#hamburger"></use>
-                            </svg>
-                        </div>
+                    <svg class="w-full text-gray-300 h-24 md:h-48" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+                        <use xlink:href='{{ publicUrl "assets/img/solid.svg#burger"}}'></use>
+                    </svg>
                     {{ end }}
                 </div>
             </a>
-
         {{end}}
+        </div>
+
+        <div class="text-center my-6">
+            <a href="wizard/{{ .week.Offset }}" class="bg-primary hover:bg-sky-900 font-bold uppercase text-white text-sm px-8 py-3 rounded-lg">🪄 Create new</a>
         </div>
     </div>
 {{end}}

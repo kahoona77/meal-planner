@@ -6,11 +6,12 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
+	"io/fs"
 	"net/http"
 	"os"
 )
 
-func InitApp() *App {
+func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
 	formatter := &logrus.TextFormatter{}
 	formatter.ForceColors = true
 	formatter.FullTimestamp = true
@@ -28,15 +29,22 @@ func InitApp() *App {
 		panic(err)
 	}
 
+	if err := runMigrations(db.DB, migrationsFs); err != nil {
+		panic(err)
+	}
+
 	ctx := &Ctx{config: &conf, db: db}
+	renderer, err := rendererFactory(ctx)
+	if err != nil {
+		panic(err)
+	}
 
 	e := echo.New()
-	e.Renderer = NewTemplate(ctx)
 	e.Debug = true
 	//e.Logger.SetLevel(log.DEBUG)
 	//e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
-	e.Use(CreateCtx(ctx))
+	e.Use(CreateCtx(ctx, renderer))
 
 	return &App{Echo: e, Ctx: ctx}
 }

@@ -9,23 +9,27 @@
                    {{ else }}
                         <div class="placeholder">
                             <svg>
-                                <use xlink:href="assets/img/solid.svg#hamburger"></use>
+                                <use xlink:href='{{ publicUrl "assets/img/solid.svg#hamburger"}}'></use>
                             </svg>
                         </div>
                    {{ end }}
                 </div>
-                <div>
-                    {{ .Name }}
-                    <div class="description">
-                        {{ htmlSafe .Description }}
+                <div class="title">
+                    <div class="text">{{ .Name }}</div>
+                </div>
+                <div class="tags">
+                    {{ range .Tags }}
+                    <div style="background-color: {{ .Color }}">
+                        <span class="text-white ">{{ .Name }}</span>
                     </div>
+                    {{end}}
                 </div>
             </div>
         {{end}}
 
         <a href="meals/new" class="flab">
             <svg>
-                <use xlink:href="assets/img/solid.svg#plus"></use>
+                <use xlink:href='{{ publicUrl "assets/img/solid.svg#plus"}}'></use>
             </svg>
         </a>
     </div>

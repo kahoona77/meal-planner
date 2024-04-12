@@ -153,12 +153,15 @@ func RateLimiterWithConfig(config RateLimiterConfig) echo.MiddlewareFunc {
 type (
 	// RateLimiterMemoryStore is the built-in store implementation for RateLimiter
 	RateLimiterMemoryStore struct {
-		visitors    map[string]*Visitor
-		mutex       sync.Mutex
-		rate        rate.Limit
+		visitors map[string]*Visitor
+		mutex    sync.Mutex
+		rate     rate.Limit // for more info check out Limiter docs - https://pkg.go.dev/golang.org/x/time/rate#Limit.
+
 		burst       int
 		expiresIn   time.Duration
 		lastCleanup time.Time
+
+		timeNow func() time.Time
 	}
 	// Visitor signifies a unique user's limiter details
 	Visitor struct {
@@ -169,12 +172,16 @@ type (
 
 /*
 NewRateLimiterMemoryStore returns an instance of RateLimiterMemoryStore with
-the provided rate (as req/s). Burst and ExpiresIn will be set to default values.
+the provided rate (as req/s).
+for more info check out Limiter docs - https://pkg.go.dev/golang.org/x/time/rate#Limit.
+
+Burst and ExpiresIn will be set to default values.
+
+Note that if the provided rate is a float number and Burst is zero, Burst will be treated as the rounded down value of the rate.
 
 Example (with 20 requests/sec):
 
 	limiterStore := middleware.NewRateLimiterMemoryStore(20)
-
 */
 func NewRateLimiterMemoryStore(rate rate.Limit) (store *RateLimiterMemoryStore) {
 	return NewRateLimiterMemoryStoreWithConfig(RateLimiterMemoryStoreConfig{
@@ -184,7 +191,7 @@ func NewRateLimiterMemoryStore(rate rate.Limit) (store *RateLimiterMemoryStore) 
 
 /*
 NewRateLimiterMemoryStoreWithConfig returns an instance of RateLimiterMemoryStore
-with the provided configuration. Rate must be provided. Burst will be set to the value of
+with the provided configuration. Rate must be provided. Burst will be set to the rounded down value of
 the configured rate if not provided or set to 0.
 
 The build-in memory store is usually capable for modest loads. For higher loads other
@@ -198,7 +205,7 @@ Characteristics:
 Example:
 
 	limiterStore := middleware.NewRateLimiterMemoryStoreWithConfig(
-		middleware.RateLimiterMemoryStoreConfig{Rate: 50, Burst: 200, ExpiresIn: 5 * time.Minutes},
+		middleware.RateLimiterMemoryStoreConfig{Rate: 50, Burst: 200, ExpiresIn: 5 * time.Minute},
 	)
 */
 func NewRateLimiterMemoryStoreWithConfig(config RateLimiterMemoryStoreConfig) (store *RateLimiterMemoryStore) {
@@ -214,14 +221,15 @@ func NewRateLimiterMemoryStoreWithConfig(config RateLimiterMemoryStoreConfig) (s
 		store.burst = int(config.Rate)
 	}
 	store.visitors = make(map[string]*Visitor)
-	store.lastCleanup = now()
+	store.timeNow = time.Now
+	store.lastCleanup = store.timeNow()
 	return
 }
 
 // RateLimiterMemoryStoreConfig represents configuration for RateLimiterMemoryStore
 type RateLimiterMemoryStoreConfig struct {
-	Rate      rate.Limit    // Rate of requests allowed to pass as req/s
-	Burst     int           // Burst additionally allows a number of requests to pass when rate limit is reached
+	Rate      rate.Limit    // Rate of requests allowed to pass as req/s. For more info check out Limiter docs - https://pkg.go.dev/golang.org/x/time/rate#Limit.
+	Burst     int           // Burst is maximum number of requests to pass at the same moment. It additionally allows a number of requests to pass when rate limit is reached.
 	ExpiresIn time.Duration // ExpiresIn is the duration after that a rate limiter is cleaned up
 }
 
@@ -239,12 +247,13 @@ func (store *RateLimiterMemoryStore) Allow(identifier string) (bool, error) {
 		limiter.Limiter = rate.NewLimiter(store.rate, store.burst)
 		store.visitors[identifier] = limiter
 	}
-	limiter.lastSeen = now()
-	if now().Sub(store.lastCleanup) > store.expiresIn {
+	now := store.timeNow()
+	limiter.lastSeen = now
+	if now.Sub(store.lastCleanup) > store.expiresIn {
 		store.cleanupStaleVisitors()
 	}
 	store.mutex.Unlock()
-	return limiter.AllowN(now(), 1), nil
+	return limiter.AllowN(store.timeNow(), 1), nil
 }
 
 /*
@@ -253,16 +262,9 @@ of users who haven't visited again after the configured expiry time has elapsed
 */
 func (store *RateLimiterMemoryStore) cleanupStaleVisitors() {
 	for id, visitor := range store.visitors {
-		if now().Sub(visitor.lastSeen) > store.expiresIn {
+		if store.timeNow().Sub(visitor.lastSeen) > store.expiresIn {
 			delete(store.visitors, id)
 		}
 	}
-	store.lastCleanup = now()
-}
-
-/*
-actual time method which is mocked in test file
-*/
-var now = func() time.Time {
-	return time.Now()
+	store.lastCleanup = store.timeNow()
 }
