@@ -9,19 +9,19 @@ import (
 	"meal-planner/planner"
 )
 
-type Wizard struct {
+type NiWizard struct {
 	mealsRepo   *meals.Repository
 	plannerRepo *planner.Repository
 }
 
-func NewWizard(c core.Context) *Wizard {
-	return &Wizard{
+func NewNiWizard(c core.Context) *NiWizard {
+	return &NiWizard{
 		mealsRepo:   meals.NewRepository(c),
 		plannerRepo: planner.NewRepository(c),
 	}
 }
 
-func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
+func (w *NiWizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	allMealTags, err := w.mealsRepo.GetAllMealTags()
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	return plannerWeek, nil
 }
 
-func (w *Wizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.MealTag) (*planner.MealOfTheDay, error) {
+func (w *NiWizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.MealTag) (*planner.MealOfTheDay, error) {
 	taggedMealIds := w.findMealIdsByTags(mealIdsWithTags, day.Tags)
 
 	if len(taggedMealIds) <= 0 {
@@ -82,7 +82,7 @@ func (w *Wizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.Me
 	return mod, nil
 }
 
-func (w *Wizard) findMealIdsByTags(mealIdsWithTags map[int64][]*meals.MealTag, tags []*WeekdayTag) []int64 {
+func (w *NiWizard) findMealIdsByTags(mealIdsWithTags map[int64][]*meals.MealTag, tags []*WeekdayTag) []int64 {
 	result := make([]int64, 0)
 
 	for mealId, tagsOfMeal := range mealIdsWithTags {

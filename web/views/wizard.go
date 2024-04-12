@@ -121,7 +121,7 @@ func Generate(ctx *core.WebContext) error {
 		date = date.AddDate(0, 0, 1)
 	}
 
-	wizzard := wizard.NewWizard(ctx)
+	wizzard := wizard.NewNiWizard(ctx)
 	plannerWeek, err := wizzard.Generate(week)
 	if err != nil {
 		return err

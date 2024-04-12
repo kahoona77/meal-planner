@@ -1,6 +1,13 @@
 package wizard
 
-import "time"
+import (
+	"meal-planner/planner"
+	"time"
+)
+
+type Wizard interface {
+	Generate(wizardWeek Week) (*planner.Week, error)
+}
 
 type Week struct {
 	Start  time.Time
