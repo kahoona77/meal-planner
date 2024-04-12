@@ -13,6 +13,6 @@ func GetFile(ctx *core.WebContext) error {
 	if err != nil {
 		return err
 	}
-
+	ctx.Response().Header().Add("Cache-Control", "max-age=432000")
 	return ctx.Blob(http.StatusOK, file.ContentType, file.Data)
 }

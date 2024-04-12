@@ -5,27 +5,27 @@
 {{end}}
 {{ define "content"}}
     <div class="meals-edit">
-        <form id="meal-delete" action="meals/{{.Id}}/delete" method="post" hidden></form>
-        <div class="edit-form">
-            <form id="meal-edit" action="meals{{if (gt .Id 0)}}/{{.Id}}{{end}}" method="post" enctype="multipart/form-data">
-                <div class="control">
-                    <label>Name</label>
-                    <input type="text" name="name" value="{{.Name}}">
-                </div>
-                <div class="image">
-                    <image-select name="image" src="{{ fileUrl .ImageFileId}}"></image-select>
-                </div>
-                <div class="control">
-                    <label>Beschreibung</label>
-                    <input id="x" type="hidden" name="description" value="{{.Description}}">
-                    <trix-editor input="x"></trix-editor>
+        <form id="meal-delete" action="meals/{{.meal.Id}}/delete" method="post" hidden></form>
+        <form id="meal-edit" action="meals{{if (gt .meal.Id 0)}}/{{.meal.Id}}{{end}}" method="post" enctype="multipart/form-data">
+            <div class="my-2">
+                <image-select name="image" src="{{ fileUrl .meal.ImageFileId}}"></image-select>
+            </div>
+            <div class="my-2">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="{{.meal.Name}}" />
+            </div>
+            <div class="my-2">
+                <label>Tags</label>
+                <multi-select id="tags" name="tags" value='{{ json .mealTags }}' options='{{ json .tags }}'></multi-select>
+            </div>
+            <div class="my-2">
+                <label for="description">Beschreibung</label>
+                <input id="description" type="hidden" name="description" value="{{.meal.Description}}">
+                <trix-editor input="description"></trix-editor>
+            </div>
+        </form>
 
-                </div>
-            </form>
-        </div>
-
-
-        <div class="buttons centered">
+        <div class="sticky bottom-0 text-center bg-white">
             <button class="btn" type="submit" form="meal-delete">Delete</button>
             <button class="btn primary" type="submit" form="meal-edit">Save</button>
         </div>

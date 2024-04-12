@@ -2,7 +2,6 @@ package meals
 
 import (
 	"database/sql"
-	"meal-planner/core"
 )
 
 type Meal struct {
@@ -12,14 +11,14 @@ type Meal struct {
 	ImageFileId sql.NullInt64 `db:"image_file_id"`
 }
 
-func InitDb(ctx *core.Ctx) {
-	ctx.Db().MustExec(mealsSchema)
+type Tag struct {
+	Id    int64  `db:"id"`
+	Name  string `db:"name"`
+	Color string `db:"color"`
 }
 
-var mealsSchema = `
-CREATE TABLE IF NOT EXISTS meals (
-	id            INTEGER PRIMARY KEY AUTOINCREMENT,
-	name          VARCHAR(255)  DEFAULT '',
-	description   TEXT          DEFAULT '',
-	image_file_id INTEGER REFERENCES files
-);`
+type MealTag struct {
+	MealId int64 `db:"meal_id"`
+	TagId  int64 `db:"tag_id"`
+	Tag
+}

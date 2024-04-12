@@ -2,7 +2,6 @@ package planner
 
 import (
 	"database/sql"
-	"meal-planner/core"
 	"meal-planner/meals"
 	"time"
 )
@@ -40,13 +39,7 @@ func (m *MealOfTheDay) UpdateId() {
 	m.Id = m.Date.Format(MealOfDayDateFormat)
 }
 
-func InitDb(ctx *core.Ctx) {
-	ctx.Db().MustExec(plannerSchema)
+func (m *MealOfTheDay) SetMeal(meal *meals.Meal) {
+	m.Meal = meal
+	m.MealId = sql.NullInt64{Int64: meal.Id, Valid: true}
 }
-
-var plannerSchema = `
-CREATE TABLE IF NOT EXISTS meals_of_day (
-	id          VARCHAR(10) PRIMARY KEY,
-	date        TIMESTAMP NOT NULL,
-	meal_id     INTEGER REFERENCES meals
-);`
