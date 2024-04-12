@@ -46,7 +46,7 @@ func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	}
 
 	for _, day := range wizardWeek.Days {
-		mod, err := w.getMealOfTheDay(day, mealIdsWithTags)
+		mod, err := w.getMealOfTheDay(day, mealIdsWithTags, plannerWeek.Meals)
 		if err != nil {
 			logrus.Warnf("could not find meal of the day: %v", err)
 		}
@@ -57,8 +57,8 @@ func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	return plannerWeek, nil
 }
 
-func (w *Wizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.MealTag) (*planner.MealOfTheDay, error) {
-	taggedMealIds := w.findMealIdsByTags(mealIdsWithTags, day.Tags)
+func (w *Wizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.MealTag, alreadyPickedMeals []*planner.MealOfTheDay) (*planner.MealOfTheDay, error) {
+	taggedMealIds := w.findMealIdsByTags(mealIdsWithTags, day.Tags, alreadyPickedMeals)
 
 	if len(taggedMealIds) <= 0 {
 		return nil, fmt.Errorf("could to find meals for tags %v", day.Tags)
@@ -82,16 +82,26 @@ func (w *Wizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.Me
 	return mod, nil
 }
 
-func (w *Wizard) findMealIdsByTags(mealIdsWithTags map[int64][]*meals.MealTag, tags []*WeekdayTag) []int64 {
+func (w *Wizard) findMealIdsByTags(mealIdsWithTags map[int64][]*meals.MealTag, tags []*WeekdayTag, alreadyPickedMeals []*planner.MealOfTheDay) []int64 {
 	result := make([]int64, 0)
 
 	for mealId, tagsOfMeal := range mealIdsWithTags {
-		if containsAllWeekDayTags(tags, tagsOfMeal) {
+		if containsAllWeekDayTags(tags, tagsOfMeal) && !isAlreadyPicked(alreadyPickedMeals, mealId) {
 			result = append(result, mealId)
 		}
 	}
 
 	return result
+}
+
+func isAlreadyPicked(alreadyPickedMeals []*planner.MealOfTheDay, mealId int64) bool {
+	for _, mod := range alreadyPickedMeals {
+		if mod.Meal.Id == mealId {
+			return true
+		}
+	}
+
+	return false
 }
 
 func containsAllWeekDayTags(tags []*WeekdayTag, tagsOfMeal []*meals.MealTag) bool {
