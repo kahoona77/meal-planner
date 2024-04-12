@@ -87,6 +87,12 @@ func (r *Repository) GetMealTags(mealId int64) ([]*MealTag, error) {
 	return mealTags, err
 }
 
+func (r *Repository) GetAllMealTags() ([]*MealTag, error) {
+	var mealTags []*MealTag
+	err := r.db.Select(&mealTags, "SELECT * FROM meal_tags left join tags t on t.id = meal_tags.tag_id")
+	return mealTags, err
+}
+
 const mealTagsInsert = `INSERT INTO meal_tags (meal_id, tag_id) VALUES (:meal_id, :tag_id)`
 
 func (r *Repository) SetTagsForMeal(meal *Meal, tags []*Tag) error {

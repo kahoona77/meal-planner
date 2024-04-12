@@ -62,9 +62,16 @@ export class MultiSelect extends LitElement {
 
     get name() {
         return this.getAttribute('name')
-    };
+    }
+
+    updated(changedProperties: Map<string, any>) {
+        if (changedProperties.has('selected')) {
+            this.updateFormValue();
+        }
+    }
 
     private updateFormValue(): void {
+        console.log("update form val");
         const value = new SelectOptionsConverter().toAttribute(this.selected);
         this.internals.setFormValue(value);
     }
@@ -73,16 +80,18 @@ export class MultiSelect extends LitElement {
         event.stopPropagation();
         const indexToRemove = this.selected.indexOf(selectedItem);
         this.selected = [...this.selected.slice(0, indexToRemove), ...this.selected.slice(indexToRemove + 1)];
-        this.updateFormValue();
         this.showItems = false;
     }
 
     private addItem(item: SelectOption) {
         if (this.selected.indexOf(item) < 0) {
             this.selected = [...this.selected, item];
-            this.updateFormValue();
             this.showItems = false;
         }
+    }
+
+    private isItemSelected(item: SelectOption): boolean {
+        return this.selected.findIndex((s: SelectOption) => s.id === item.id) >= 0;
     }
 
     render() {
@@ -125,7 +134,7 @@ export class MultiSelect extends LitElement {
                                             ${this.items.map((item) => html`
                                                 <div class="${classMap({
                                                     item: true,
-                                                    disabled: this.selected.indexOf(item) >= 0
+                                                    disabled: this.isItemSelected(item)
                                                 })}" @click=${() => this.addItem(item)}>${item.name}
                                                 </div>`)}
                                         </div>` : nothing

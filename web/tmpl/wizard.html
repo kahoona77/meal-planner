@@ -2,12 +2,12 @@
 {{$tags := .tags}}
     <form class="mb-32" method="post">
         <div class="text-center text-lg m-4">
-            {{ .week.Start.Format "02.01.2006" }} - {{ .week.End.Format "02.01.2006" }}
+            {{ .week.start.Format "02.01.2006" }} - {{ .week.end.Format "02.01.2006" }}
         </div>
-        {{ range .week.Days }}
+        {{ range .week.days }}
         <div class="grid md:grid-cols-[8rem_1fr] gap-4 items-center">
-            <div class="w-12">{{ formatWeekday .Weekday }}</div>
-            <div class="w-full"><multi-select id="tags_{{ .Weekday }}" name="tags_{{ .Weekday }}" value='{{ json .Tags }}' options='{{ json $tags }}'></multi-select></div>
+            <div class="w-12">{{ formatWeekday .weekday }}</div>
+            <div class="w-full"><multi-select id="tags_{{ .weekday }}" name="tags_{{ .weekday }}" value='{{ json .tags }}' options='{{ json $tags }}'></multi-select></div>
         </div>
         {{ end }}
 

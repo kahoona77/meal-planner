@@ -9,6 +9,7 @@ import (
 	"meal-planner/core"
 	"meal-planner/files"
 	"meal-planner/meals"
+	"meal-planner/wizard"
 	"net/http"
 	"strconv"
 )
@@ -225,5 +226,12 @@ func mealTagsConverter(mealTag *meals.MealTag) *SelectOption {
 	return &SelectOption{
 		Id:   fmt.Sprintf("%d", mealTag.TagId),
 		Name: mealTag.Name,
+	}
+}
+
+func weekdayTagsConverter(tag *wizard.WeekdayTag) *SelectOption {
+	return &SelectOption{
+		Id:   fmt.Sprintf("%d", tag.TagId),
+		Name: tag.TagName,
 	}
 }

@@ -57,10 +57,8 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 
 	id := ctx.Param("id")
 	mealOfDay, err := repo.GetMealOfDay(id)
-	createNew := false
 	if err != nil {
 		mealOfDay = planner.NewMealFromId(id)
-		createNew = true
 	}
 
 	selected := ctx.FormValue("selected")
@@ -71,14 +69,8 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 		mealOfDay.MealId = sql.NullInt64{Int64: int64(mealId), Valid: true}
 	}
 
-	if createNew {
-		if err := repo.CreateMealOfDay(mealOfDay); err != nil {
-			return err
-		}
-	} else {
-		if err := repo.UpdateMealOfDay(mealOfDay); err != nil {
-			return err
-		}
+	if err := repo.UpsertMealOfDay(mealOfDay); err != nil {
+		return err
 	}
 
 	return ctx.Redirect(http.StatusFound, "/")

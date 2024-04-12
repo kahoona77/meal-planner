@@ -2,7 +2,7 @@ package wizard
 
 import "time"
 
-type Wizard struct {
+type Week struct {
 	Start  time.Time
 	End    time.Time
 	Offset int
@@ -11,6 +11,7 @@ type Wizard struct {
 
 type Day struct {
 	Weekday int
+	Date    time.Time
 	Tags    []*WeekdayTag
 }
 
