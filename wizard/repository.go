@@ -3,7 +3,6 @@ package wizard
 import (
 	"github.com/jmoiron/sqlx"
 	"meal-planner/core"
-	"time"
 )
 
 type Repository struct {
@@ -20,11 +19,11 @@ func (r *Repository) GetWeekdayTags() ([]*WeekdayTag, error) {
 	return tags, err
 }
 
-const weekdayTagsInsert = `INSERT INTO weekday (weekday, tag_id) VALUES (:weekday, :tag_id)`
+const weekdayTagsInsert = `INSERT INTO weekday_tags (weekday, tag_id) VALUES (:weekday, :tag_id)`
 
-func (r *Repository) SetWeekdayTags(weekday time.Weekday, tags []*WeekdayTag) error {
+func (r *Repository) SetWeekdayTags(weekday int, tags []*WeekdayTag) error {
 	// delete old tags
-	_, err := r.db.Exec("DELETE FROM meal_tags WHERE weekday=$1", weekday)
+	_, err := r.db.Exec("DELETE FROM weekday_tags WHERE weekday=$1", weekday)
 	if err != nil {
 		return err
 	}

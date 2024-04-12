@@ -1,8 +1,9 @@
 -- +goose Up
 CREATE TABLE weekday_tags
 (
-    weekday INTEGER PRIMARY KEY,
-    tag_id  INTEGER REFERENCES tags
+    weekday INTEGER,
+    tag_id  INTEGER REFERENCES tags,
+    PRIMARY KEY (weekday, tag_id)
 );
 
 

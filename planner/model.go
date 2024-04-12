@@ -38,3 +38,8 @@ type MealOfTheDay struct {
 func (m *MealOfTheDay) UpdateId() {
 	m.Id = m.Date.Format(MealOfDayDateFormat)
 }
+
+func (m *MealOfTheDay) SetMeal(meal *meals.Meal) {
+	m.Meal = meal
+	m.MealId = sql.NullInt64{Int64: meal.Id, Valid: true}
+}

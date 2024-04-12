@@ -16,17 +16,11 @@ func NewRepository(c core.Context) *Repository {
 
 const mealsInsert = `INSERT INTO meals_of_day (id, date, meal_id) VALUES (:id, :date, :meal_id)`
 
-func (r *Repository) CreateMealOfDay(meal *MealOfTheDay) error {
-	meal.UpdateId()
-	_, err := r.db.NamedExec(mealsInsert, meal)
-	return err
-}
+const mealsUpsert = `INSERT INTO meals_of_day (id, date, meal_id) VALUES (:id, :date, :meal_id) ON CONFLICT (id) DO UPDATE SET date=:date, meal_id=:meal_id WHERE id = :id`
 
-const mealsUpdate = `UPDATE meals_of_day SET date=:date, meal_id=:meal_id WHERE id = :id`
-
-func (r *Repository) UpdateMealOfDay(meal *MealOfTheDay) error {
+func (r *Repository) UpsertMealOfDay(meal *MealOfTheDay) error {
 	meal.UpdateId()
-	_, err := r.db.NamedExec(mealsUpdate, meal)
+	_, err := r.db.NamedExec(mealsUpsert, meal)
 	return err
 }
 

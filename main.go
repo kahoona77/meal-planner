@@ -30,6 +30,7 @@ func main() {
 	root.GET("/offset/:offset", views.Offset)
 
 	root.GET("/wizard/:offset", views.Wizard)
+	root.POST("/wizard/:offset", views.Generate)
 
 	root.GET("/planner/:id", views.MealOfDay)
 	root.GET("/planner/:id/select", views.SelectMealOfDayView)
