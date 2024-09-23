@@ -4,7 +4,7 @@
   "start_url": "../",
   "display": "standalone",
   "background_color" : "#086699" ,
-  "theme_color": "#ffffff",
+  "theme_color": "#086699",
   "description": "A Family Meal-Planner",
   "icons": [
     {
