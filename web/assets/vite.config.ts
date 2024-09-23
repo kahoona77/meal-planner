@@ -6,7 +6,7 @@ export default defineConfig({
     base: "/meal-planner/assets",
     plugins: [],
     build: {
-        manifest: false,
+        manifest: 'vite-manifest.json',
         rollupOptions: {
             // overwrite default .html entry
             input: [

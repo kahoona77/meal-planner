@@ -46,7 +46,7 @@ func CreateRenderer(ctx *core.Ctx) (core.HtmlRenderer, error) {
 
 	if !ctx.Config().IsDev {
 		var err error
-		manifest, err = ParseManifest("web/assets/dist/manifest.json", f)
+		manifest, err = ParseManifest("web/assets/dist/vite-manifest.json", f)
 		if err != nil {
 			return nil, fmt.Errorf("could not prase manifest-file: %v", err)
 		}
