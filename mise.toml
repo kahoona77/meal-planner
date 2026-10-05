@@ -1,0 +1,40 @@
+[tools]
+go = "1.27"
+node = "24"
+
+[tasks.install]
+description = "Install frontend dependencies"
+dir = "web/assets"
+run = "npm install"
+
+[tasks.build-frontend]
+description = "Build the frontend (Vite)"
+dir = "web/assets"
+depends = ["install"]
+run = "npm run build"
+
+[tasks.build]
+description = "Build the Go binary"
+depends = ["build-frontend"]
+env = { CGO_ENABLED = "1" }
+run = "go build -mod=vendor -o meal-planner"
+
+[tasks.test]
+description = "Run the Go tests"
+env = { CGO_ENABLED = "1" }
+run = "go test -mod=vendor ./..."
+
+[tasks."dev:frontend"]
+description = "Start the Vite dev server (port 5173)"
+dir = "web/assets"
+depends = ["install"]
+run = "npm run dev"
+
+[tasks."dev:backend"]
+description = "Start the Go server in dev mode (port 8080)"
+env = { CGO_ENABLED = "1", DEV_MODE = "true" }
+run = "go run -mod=vendor ."
+
+[tasks.dev]
+description = "Start Vite and the Go server in parallel (http://localhost:8080/meal-planner)"
+depends = ["dev:frontend", "dev:backend"]
