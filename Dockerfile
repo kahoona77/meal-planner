@@ -1,10 +1,10 @@
-FROM node:18-alpine AS frontendBuilder
+FROM node:24-alpine AS frontendBuilder
 COPY web/ /web/
 WORKDIR /web/assets
 RUN npm install
 RUN npm run build
 
-FROM golang:1.22-alpine AS builder
+FROM golang:1.27-alpine AS builder
 RUN apk add --no-cache gcc musl-dev
 WORKDIR /go/src/app
 COPY . .
