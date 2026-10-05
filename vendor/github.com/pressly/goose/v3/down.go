@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"slices"
 )
 
 // Down rolls back a single migration from the current version.
@@ -68,17 +69,17 @@ func DownToContext(ctx context.Context, db *sql.DB, dir string, version int64, o
 		}
 
 		if currentVersion == 0 {
-			log.Printf("goose: no migrations to run. current version: %d\n", currentVersion)
+			log.Printf("goose: no migrations to run. current version: %d", currentVersion)
 			return nil
 		}
 		current, err := migrations.Current(currentVersion)
 		if err != nil {
-			log.Printf("goose: migration file not found for current version (%d), error: %s\n", currentVersion, err)
+			log.Printf("goose: migration file not found for current version (%d), error: %s", currentVersion, err)
 			return err
 		}
 
 		if current.Version <= version {
-			log.Printf("goose: no migrations to run. current version: %d\n", currentVersion)
+			log.Printf("goose: no migrations to run. current version: %d", currentVersion)
 			return nil
 		}
 
@@ -92,16 +93,16 @@ func DownToContext(ctx context.Context, db *sql.DB, dir string, version int64, o
 // target version.
 func downToNoVersioning(ctx context.Context, db *sql.DB, migrations Migrations, version int64) error {
 	var finalVersion int64
-	for i := len(migrations) - 1; i >= 0; i-- {
-		if version >= migrations[i].Version {
-			finalVersion = migrations[i].Version
+	for _, migration := range slices.Backward(migrations) {
+		if version >= migration.Version {
+			finalVersion = migration.Version
 			break
 		}
-		migrations[i].noVersioning = true
-		if err := migrations[i].DownContext(ctx, db); err != nil {
+		migration.noVersioning = true
+		if err := migration.DownContext(ctx, db); err != nil {
 			return err
 		}
 	}
-	log.Printf("goose: down to current file version: %d\n", finalVersion)
+	log.Printf("goose: down to current file version: %d", finalVersion)
 	return nil
 }

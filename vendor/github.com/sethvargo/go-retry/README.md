@@ -1,7 +1,6 @@
 # Retry
 
-[![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/mod/github.com/sethvargo/go-retry)
-[![GitHub Actions](https://img.shields.io/github/workflow/status/sethvargo/go-retry/Test?style=flat-square)](https://github.com/sethvargo/go-retry/actions?query=workflow%3ATest)
+[![Test](https://github.com/sethvargo/go-retry/actions/workflows/test.yml/badge.svg)](https://github.com/sethvargo/go-retry/actions/workflows/test.yml)[![GoDoc](https://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/mod/github.com/sethvargo/go-retry)
 
 Retry is a Go library for facilitating retry logic and backoff. It's highly
 extensible with full control over how and when retries occur. You can also write
@@ -116,7 +115,7 @@ also write custom middleware.
 
 ### Jitter
 
-To reduce the changes of a thundering herd, add random jitter to the returned
+To reduce the chances of a thundering herd, add random jitter to the returned
 value.
 
 ```golang
@@ -127,6 +126,9 @@ b = WithJitter(500*time.Millisecond, b)
 
 // Return the next value, +/- 5% of the result
 b = WithJitterPercent(5, b)
+
+// Return a random value in [0, next value)
+b = WithFullJitter(b)
 ```
 
 ### MaxRetries
@@ -179,8 +181,8 @@ Benchmark/sethvargo-7    203,914,245     5.73 ns/op
 
 ## Notes and Caveats
 
-- Randomization uses `math/rand` seeded with the Unix timestamp instead of
-  `crypto/rand`.
+- Randomization uses `math/rand/v2` (non-cryptographic, automatically seeded),
+  not `crypto/rand`.
 - Ordering of addition of multiple modifiers will make a difference.
   For example; ensure you add `CappedDuration` before `WithMaxDuration`, otherwise it may early out too early.
   Another example is you could add `Jitter` before or after capping depending on your desired outcome.
