@@ -34,6 +34,7 @@ App URL: http://localhost:8080/meal-planner
 | `PORT`      | `8080`                |                                                                                                                                                             |
 | `BASE_PATH` | `/meal-planner`       | All routes are mounted under it. Vite's `base` (`/meal-planner/assets`) is hardcoded in `vite.config.ts` and must match                                     |
 | `DB_FILE`   | `meal-planner.sqlite` | SQLite file; migrations run automatically on startup (goose)                                                                                                |
+| `LOG_LEVEL` | `info`                | `debug`, `info`, `warn` or `error` (`log/slog`)                                                                                                             |
 
 ## Architecture
 

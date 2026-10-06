@@ -1,6 +1,7 @@
 package core
 
 import (
+	"log/slog"
 	"os"
 	"strconv"
 )
@@ -10,6 +11,7 @@ type AppConfig struct {
 	Port     string
 	BasePath string
 	DbFile   string
+	LogLevel slog.Level
 }
 
 func LoadConfiguration() AppConfig {
@@ -30,6 +32,11 @@ func LoadConfiguration() AppConfig {
 	conf.DbFile = os.Getenv("DB_FILE")
 	if conf.DbFile == "" {
 		conf.DbFile = "meal-planner.sqlite"
+	}
+
+	// LOG_LEVEL is one of debug, info, warn, error; defaults to info
+	if err := conf.LogLevel.UnmarshalText([]byte(os.Getenv("LOG_LEVEL"))); err != nil {
+		conf.LogLevel = slog.LevelInfo
 	}
 
 	return conf

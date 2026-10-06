@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"html/template"
 	"io"
 	"meal-planner/core"
@@ -60,8 +59,7 @@ func (t *HtmlRenderer) loadTemplates() {
 	layout := templatesDir + "/base" + ext
 	_, err := os.Stat(layout)
 	if err != nil {
-		logrus.Panicf("cannot find %s", layout)
-		os.Exit(1)
+		panic(fmt.Sprintf("cannot find %s", layout))
 	}
 
 	funcMap := template.FuncMap{

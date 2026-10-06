@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/sirupsen/logrus"
 	"io"
+	"log/slog"
 	"mime/multipart"
 	"net/http"
 	"strconv"
@@ -35,7 +35,7 @@ func (ctx *Ctx) Config() *AppConfig {
 
 func (ctx *Ctx) Close() {
 	if err := ctx.db.Close(); err != nil {
-		logrus.Errorf("error closing database: %v", err)
+		slog.Error("error closing database", "err", err)
 	}
 }
 
