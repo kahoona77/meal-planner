@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/jmoiron/sqlx"
+	"github.com/lmittmann/tint"
 	_ "github.com/mattn/go-sqlite3"
 	"io/fs"
 	"log/slog"
@@ -16,7 +17,11 @@ import (
 func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
 	conf := LoadConfiguration()
 
-	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: conf.LogLevel})))
+	slog.SetDefault(slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
+		Level:      conf.LogLevel,
+		TimeFormat: time.DateTime,
+		NoColor:    !isTerminal(os.Stdout),
+	})))
 
 	// this connects & tries a simple 'SELECT 1', panics on error
 	// use sqlx.Open() for sql.Open() semantics
@@ -136,6 +141,12 @@ func logRequests(next http.Handler) http.Handler {
 		start := time.Now()
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rec, r)
-		slog.Info("request", "method", r.Method, "path", r.URL.Path, "status", rec.status, "duration", time.Since(start).Round(time.Microsecond))
+		slog.Info(r.Method+" "+r.URL.Path, "status", rec.status, "duration", time.Since(start).Round(time.Microsecond))
 	})
+}
+
+// isTerminal reports whether f is an interactive terminal, so colors are only used there.
+func isTerminal(f *os.File) bool {
+	info, err := f.Stat()
+	return err == nil && info.Mode()&os.ModeCharDevice != 0
 }

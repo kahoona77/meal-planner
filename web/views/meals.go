@@ -2,16 +2,12 @@ package views
 
 import (
 	"database/sql"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	"io"
 	"log/slog"
 	"meal-planner/core"
 	"meal-planner/files"
 	"meal-planner/meals"
-	"meal-planner/wizard"
 	"net/http"
-	"strconv"
 )
 
 func Meals(ctx *core.WebContext) error {
@@ -67,10 +63,14 @@ func MealEdit(ctx *core.WebContext) error {
 		}
 	}
 
+	selectedIds := make([]int64, len(mealTags))
+	for i, mealTag := range mealTags {
+		selectedIds[i] = mealTag.TagId
+	}
+
 	return ctx.RenderTemplate(http.StatusOK, "meals-edit.html", core.TemplateData{
-		"meal":     meal,
-		"mealTags": toSelectOptions(mealTags, mealTagsConverter),
-		"tags":     toSelectOptions(tags, tagsConverter),
+		"meal":      meal,
+		"tagSelect": newTagSelect("tags", tags, selectedIds),
 	})
 }
 
@@ -91,19 +91,10 @@ func MealSave(ctx *core.WebContext) error {
 	meal.Name = ctx.FormValue("name")
 	meal.Description = ctx.FormValue("description")
 
-	var tags []*meals.Tag
-	tagsJson := ctx.FormValue("tags")
-	if tagsJson != "" {
-		var options []*SelectOption
-		err := json.Unmarshal([]byte(tagsJson), &options)
-		if err != nil {
-			return err
-		}
-		tags = make([]*meals.Tag, len(options))
-		for i, option := range options {
-			id, _ := strconv.ParseInt(option.Id, 10, 64)
-			tags[i] = &meals.Tag{Id: id, Name: option.Name}
-		}
+	tagIds := formTagIds(ctx, "tags")
+	tags := make([]*meals.Tag, len(tagIds))
+	for i, id := range tagIds {
+		tags[i] = &meals.Tag{Id: id}
 	}
 
 	imageFile, err := getNewImageFile(ctx, "image")
@@ -175,7 +166,7 @@ func getNewImageFile(ctx *core.WebContext, name string) (*files.File, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(src)
+	data, err := io.ReadAll(src)
 	if err != nil {
 		return nil, err
 	}
@@ -192,44 +183,7 @@ func getNewImageFile(ctx *core.WebContext, name string) (*files.File, error) {
 	return imageFile, nil
 }
 
-type SelectOption struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
 type MealWithTags struct {
 	*meals.Meal
 	Tags []*meals.MealTag
-}
-
-type SelectOptionConverterFunc[T any] func(v T) *SelectOption
-
-func toSelectOptions[T any](options []T, converterFunc SelectOptionConverterFunc[T]) []*SelectOption {
-	result := make([]*SelectOption, len(options))
-	for i, option := range options {
-		result[i] = converterFunc(option)
-	}
-
-	return result
-}
-
-func tagsConverter(tag *meals.Tag) *SelectOption {
-	return &SelectOption{
-		Id:   fmt.Sprintf("%d", tag.Id),
-		Name: tag.Name,
-	}
-}
-
-func mealTagsConverter(mealTag *meals.MealTag) *SelectOption {
-	return &SelectOption{
-		Id:   fmt.Sprintf("%d", mealTag.TagId),
-		Name: mealTag.Name,
-	}
-}
-
-func weekdayTagsConverter(tag *wizard.WeekdayTag) *SelectOption {
-	return &SelectOption{
-		Id:   fmt.Sprintf("%d", tag.TagId),
-		Name: tag.TagName,
-	}
 }

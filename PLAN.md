@@ -66,6 +66,8 @@ Verified: old (Echo) and new build run side by side against copies of the DB; al
 - [x] Replace all logrus calls (`core`, `web`, `web/views`, `wizard`)
 - [x] Remove logrus from `go.mod`, re-vendor
 
+Output uses the [tint](https://github.com/lmittmann/tint) handler (compact, colored on a terminal, plain otherwise).
+
 Along the way: removed duplicate error logs in handlers (returned errors are logged centrally) and fixed tag log messages that said "meal".
 
 ## 3. Replace Lit components with plain HTML / vanilla JS
