@@ -2,26 +2,22 @@ package core
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 	"io"
+	"mime/multipart"
+	"net/http"
 	"strconv"
 )
+
+// maxMemory is the part of a multipart form kept in memory, the rest goes to temp files.
+const maxMemory = 32 << 20
 
 type Context interface {
 	Db() *sqlx.DB
 	Config() *AppConfig
-}
-
-func CreateCtx(ctx *Ctx, renderer HtmlRenderer) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			cc := &WebContext{Context: c, Ctx: ctx, renderer: renderer}
-			return next(cc)
-		}
-	}
 }
 
 type Ctx struct {
@@ -43,10 +39,25 @@ func (ctx *Ctx) Close() {
 	}
 }
 
+// WebContext is passed to every handler and wraps the current request and response.
 type WebContext struct {
-	renderer HtmlRenderer
-	echo.Context
 	*Ctx
+	renderer HtmlRenderer
+	w        http.ResponseWriter
+	r        *http.Request
+}
+
+func (ctx *WebContext) Request() *http.Request {
+	return ctx.r
+}
+
+func (ctx *WebContext) Header() http.Header {
+	return ctx.w.Header()
+}
+
+// Param returns the path parameter name, e.g. {id}, or "" if the route has none.
+func (ctx *WebContext) Param(name string) string {
+	return ctx.r.PathValue(name)
 }
 
 func (ctx *WebContext) ParamAsInt(name string) int {
@@ -55,19 +66,43 @@ func (ctx *WebContext) ParamAsInt(name string) int {
 	return p
 }
 
-func (ctx *WebContext) Redirect(code int, name string) error {
-	return ctx.Context.Redirect(code, fmt.Sprintf("%s%s", ctx.config.BasePath, name))
+func (ctx *WebContext) FormValue(name string) string {
+	return ctx.r.FormValue(name)
+}
+
+func (ctx *WebContext) FormFile(name string) (*multipart.FileHeader, error) {
+	if err := ctx.r.ParseMultipartForm(maxMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
+		return nil, err
+	}
+	f, header, err := ctx.r.FormFile(name)
+	if err != nil {
+		return nil, err
+	}
+	return header, f.Close()
+}
+
+// Redirect redirects to path, which is relative to the configured base path.
+func (ctx *WebContext) Redirect(code int, path string) error {
+	http.Redirect(ctx.w, ctx.r, fmt.Sprintf("%s%s", ctx.config.BasePath, path), code)
+	return nil
+}
+
+func (ctx *WebContext) Blob(code int, contentType string, data []byte) error {
+	ctx.w.Header().Set("Content-Type", contentType)
+	ctx.w.WriteHeader(code)
+	_, err := ctx.w.Write(data)
+	return err
 }
 
 func (ctx *WebContext) RenderTemplate(code int, name string, data TemplateData) (err error) {
 	if ctx.renderer == nil {
-		return echo.ErrRendererNotRegistered
+		return errors.New("no renderer registered")
 	}
 	buf := new(bytes.Buffer)
 	if err = ctx.renderer.Render(buf, name, data, ctx); err != nil {
 		return
 	}
-	return ctx.HTMLBlob(code, buf.Bytes())
+	return ctx.Blob(code, "text/html; charset=UTF-8", buf.Bytes())
 }
 
 type HtmlRenderer interface {
