@@ -1,7 +1,7 @@
 package views
 
 import (
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"net/http"
@@ -11,7 +11,7 @@ func Tags(ctx *core.WebContext) error {
 	repo := meals.NewRepository(ctx)
 	tags, err := repo.GetTags()
 	if err != nil {
-		logrus.Errorf("error loading tags: %v", err)
+		slog.Error("error loading tags", "err", err)
 	}
 
 	data := core.TemplateData{
@@ -40,12 +40,10 @@ func TagSave(ctx *core.WebContext) error {
 
 	if isNew {
 		if err := repo.CreateTag(tag); err != nil {
-			logrus.Errorf("error creating meal: %v", err)
 			return err
 		}
 	} else {
 		if err := repo.UpdateTag(tag); err != nil {
-			logrus.Errorf("error updating meal: %v", err)
 			return err
 		}
 	}

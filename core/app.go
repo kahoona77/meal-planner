@@ -5,8 +5,8 @@ import (
 	"errors"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/sirupsen/logrus"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"os"
 	"strings"
@@ -14,15 +14,9 @@ import (
 )
 
 func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
-	formatter := &logrus.TextFormatter{}
-	formatter.ForceColors = true
-	formatter.FullTimestamp = true
-	formatter.TimestampFormat = "2006-01-02 15:04:05"
-	logrus.SetFormatter(formatter)
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.InfoLevel)
-
 	conf := LoadConfiguration()
+
+	slog.SetDefault(slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: conf.LogLevel})))
 
 	// this connects & tries a simple 'SELECT 1', panics on error
 	// use sqlx.Open() for sql.Open() semantics
@@ -52,7 +46,7 @@ type App struct {
 
 // Start listens on addr and serves all registered routes.
 func (a *App) Start(addr string) error {
-	logrus.Infof("http server started on %s", addr)
+	slog.Info("http server started", "addr", addr)
 	return http.ListenAndServe(addr, logRequests(a.mux))
 }
 
@@ -123,7 +117,7 @@ func handleError(w http.ResponseWriter, r *http.Request, err error) {
 		http.NotFound(w, r)
 		return
 	}
-	logrus.Errorf("%s %s: %v", r.Method, r.URL.Path, err)
+	slog.Error("request failed", "method", r.Method, "path", r.URL.Path, "err", err)
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
@@ -142,6 +136,6 @@ func logRequests(next http.Handler) http.Handler {
 		start := time.Now()
 		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
 		next.ServeHTTP(rec, r)
-		logrus.Infof("%s %s %d %s", r.Method, r.URL.Path, rec.status, time.Since(start).Round(time.Microsecond))
+		slog.Info("request", "method", r.Method, "path", r.URL.Path, "status", rec.status, "duration", time.Since(start).Round(time.Microsecond))
 	})
 }

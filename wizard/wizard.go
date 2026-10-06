@@ -2,7 +2,7 @@ package wizard
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"math/rand/v2"
 	"meal-planner/core"
 	"meal-planner/meals"
@@ -48,7 +48,7 @@ func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	for _, day := range wizardWeek.Days {
 		mod, err := w.getMealOfTheDay(day, mealIdsWithTags, plannerWeek.Meals)
 		if err != nil {
-			logrus.Warnf("could not find meal of the day: %v", err)
+			slog.Warn("could not find meal of the day", "err", err)
 		}
 
 		plannerWeek.Meals = append(plannerWeek.Meals, mod)

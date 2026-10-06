@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
+	"log/slog"
 	"meal-planner/core"
 	"meal-planner/files"
 	"meal-planner/meals"
@@ -18,7 +18,7 @@ func Meals(ctx *core.WebContext) error {
 	repo := meals.NewRepository(ctx)
 	mealsList, err := repo.GetMeals()
 	if err != nil {
-		logrus.Errorf("error loading meals: %v", err)
+		slog.Error("error loading meals", "err", err)
 	}
 
 	mealsWithTags := make([]*MealWithTags, len(mealsList))
@@ -125,12 +125,10 @@ func MealSave(ctx *core.WebContext) error {
 
 	if isNew {
 		if err := repo.CreateMeal(meal); err != nil {
-			logrus.Errorf("error creating meal: %v", err)
 			return err
 		}
 	} else {
 		if err := repo.UpdateMeal(meal); err != nil {
-			logrus.Errorf("error updating meal: %v", err)
 			return err
 		}
 	}

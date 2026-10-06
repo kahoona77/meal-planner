@@ -8,7 +8,7 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 |----|------------------------------------------------------|---------|
 | 0  | Tooling & dependency refresh (mise, Go, CI)          | ✅ Done |
 | 1  | Replace Echo with `net/http`                         | ✅ Done |
-| 2  | Replace logrus with `log/slog`                       | ⬜ Open |
+| 2  | Replace logrus with `log/slog`                       | ✅ Done |
 | 3  | Replace Lit components with plain HTML / vanilla JS  | ⬜ Open |
 | 4  | Tailwind 4 standalone CLI, remove Node & Vite        | ⬜ Open |
 | 5  | Migrate templates to templ                           | ⬜ Open |
@@ -60,11 +60,13 @@ Go's `ServeMux` supports methods and path parameters (`GET /meals/{id}`), so Ech
 
 Verified: old (Echo) and new build run side by side against copies of the DB; all GET pages return byte-identical HTML, all POST flows (tag, meal with image upload, meal edit, day select, wizard, delete) lead to identical results. Only intended difference: missing records return 404 instead of a 500 with a JSON error.
 
-## 2. Replace logrus with `log/slog`
+## 2. Replace logrus with `log/slog` ✅
 
-- [ ] `slog` text handler on stdout, level configurable via env (e.g. `LOG_LEVEL`)
-- [ ] Replace all logrus calls (`core`, `web`, `web/views`, `wizard`)
-- [ ] Remove logrus from `go.mod`, re-vendor
+- [x] `slog` text handler on stdout, level configurable via env (e.g. `LOG_LEVEL`)
+- [x] Replace all logrus calls (`core`, `web`, `web/views`, `wizard`)
+- [x] Remove logrus from `go.mod`, re-vendor
+
+Along the way: removed duplicate error logs in handlers (returned errors are logged centrally) and fixed tag log messages that said "meal".
 
 ## 3. Replace Lit components with plain HTML / vanilla JS
 
