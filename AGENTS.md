@@ -2,7 +2,7 @@
 
 Guidance for AI coding agents working in this repository.
 
-A family meal planner: server-rendered Go web app (Echo + `html/template`) with SQLite, plus a small Vite/Lit/Tailwind frontend bundle.
+A family meal planner: server-rendered Go web app (`net/http` + `html/template`) with SQLite, plus a small Vite/Lit/Tailwind frontend bundle.
 
 ## Conventions
 
@@ -38,7 +38,7 @@ App URL: http://localhost:8080/meal-planner
 ## Architecture
 
 - `main.go` – route table. All routes live in one `root` group under `BASE_PATH`.
-- `core/` – app bootstrap and the handler abstraction. Echo is wrapped: handlers have the signature `func(*core.WebContext) error` and are registered via `core.App`/`core.Group` (`GET`/`POST`/...), which cast Echo's context to `WebContext` (injected by the `CreateCtx` middleware). `WebContext` exposes `Db()`, `Config()`, `ParamAsInt`, `RenderTemplate(code, "name.html", core.TemplateData{...})`, and a `Redirect` that prefixes `BASE_PATH` automatically. Note: `DELETE` helpers actually register `PUT`.
+- `core/` – app bootstrap and the handler abstraction on top of `net/http` (`http.ServeMux` with Go 1.22 patterns, path params as `{id}`). Handlers have the signature `func(*core.WebContext) error` and are registered via `core.Group` (`GET`/`POST`/..., `Static`). A returned error becomes a 500 (`sql.ErrNoRows` becomes a 404). `WebContext` exposes `Db()`, `Config()`, `Param`/`ParamAsInt`, `FormValue`/`FormFile`, `RenderTemplate(code, "name.html", core.TemplateData{...})`, `Blob`, and a `Redirect` that prefixes `BASE_PATH` automatically.
 - Domain packages `meals/`, `planner/`, `files/`, `wizard/` – each has `model.go` + `repository.go`; repositories are created per request with `NewRepository(ctx core.Context)` and use `sqlx` with raw SQL. `wizard` generates a random week plan from meals filtered by tags, using the meals and planner repositories.
 - `web/views/` – HTTP handlers (one file per area), glue between repositories and templates.
 - `web/renderer.go` – template engine. Each page template in `web/tmpl/` is parsed together with `base.html` (layout) and all `_*.html` partials; templates are **reloaded on every render**. The `funcMap` there (`basePath`, `assetUrl`, `publicUrl`, `fileUrl`, `formatWeekday`, `json`, ...) is what templates can call. `assetUrl` resolves hashed file names through the Vite manifest in production.
