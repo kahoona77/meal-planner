@@ -4,17 +4,17 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 
 ## Overview
 
-| #  | Work package                                         | Status  |
-|----|------------------------------------------------------|---------|
-| 0  | Tooling & dependency refresh (mise, Go, CI)          | ✅ Done |
-| 1  | Replace Echo with `net/http`                         | ✅ Done |
-| 2  | Replace logrus with `log/slog`                       | ✅ Done |
-| 3  | Replace Lit components with plain HTML / vanilla JS  | ⬜ Open |
-| 4  | Tailwind 4 standalone CLI, remove Node & Vite        | ⬜ Open |
-| 5  | Migrate templates to templ                           | ⬜ Open |
-| 6  | Embed static assets, single binary                   | ⬜ Open |
-| 7  | Add htmx where it helps                              | ⬜ Open |
-| 8  | Cleanup & docs                                       | ⬜ Open |
+| # | Work package                                        | Status         |
+|---|-----------------------------------------------------|----------------|
+| 0 | Tooling & dependency refresh (mise, Go, CI)         | ✅ Done        |
+| 1 | Replace Echo with `net/http`                        | ✅ Done        |
+| 2 | Replace logrus with `log/slog`                      | ✅ Done        |
+| 3 | Replace Lit components with plain HTML / vanilla JS | 🚧 In progress |
+| 4 | Tailwind 4 standalone CLI, remove Node & Vite       | ⬜ Open        |
+| 5 | Migrate templates to templ                          | ⬜ Open        |
+| 6 | Embed static assets, single binary                  | ⬜ Open        |
+| 7 | Add htmx where it helps                             | ⬜ Open        |
+| 8 | Cleanup & docs                                      | ⬜ Open        |
 
 Status: ⬜ Open · 🚧 In progress · ✅ Done
 
@@ -74,12 +74,15 @@ Along the way: removed duplicate error logs in handlers (returned errors are log
 
 Prerequisite for dropping Node: no TypeScript/Lit build anymore.
 
-- [ ] `toggle-visibility` (tag list): small vanilla JS or `<details>`; later possibly htmx (WP 7)
-- [ ] `multi-select` (meal edit, wizard): checkbox chips styled with Tailwind, submitted as normal form fields; adjust form parsing in `web/views/meals.go` and `wizard.go`
-- [ ] Remove unused `my-element.ts` and `vite.svg`
-- [ ] Keep `image-select.js` (already vanilla); check it still works
-- [ ] Trix editor (vendored `trix.js`/`trix.css`): update to the current version
+- [x] `toggle-visibility` (tag list): `data-toggle` buttons + `public/toggle.js` (event delegation, no build)
+- [x] `multi-select` (meal edit, wizard): checkbox chips (`_tag-select.html` partial), submitted as repeated form fields; form parsing in `web/views/meals.go` and `wizard.go` uses `formTagIds`
+- [x] Remove unused `my-element.ts`, `lit.svg` and `vite.svg`
+- [x] Remove `index.ts`, TypeScript and `tsconfig.json`; Vite only builds `index.css` now
+- [x] Keep `image-select.js` (already vanilla); check it still works
+- [x] Trix editor (vendored `trix.js`/`trix.css`): updated 1.3.1 → 2.1.19 (old files were unmodified upstream copies)
 - [ ] Decide: is `test.html` in `public/img` still needed?
+
+Verified: tag preselection identical to the old version (meal edit, wizard); saving meals and wizard with/without tags; tag edit toggle and Trix 2 in the browser, no console errors. Selected chips use a tinted background of the tag color (`color-mix`) so they stay readable for light and dark colors.
 
 ## 4. Tailwind 4 standalone CLI, remove Node & Vite
 

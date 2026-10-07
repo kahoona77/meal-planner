@@ -22,18 +22,16 @@
                  id="tag-{{ $index }}">
                 <div class="p-3">
                     <div class="font-bold text-xl mb-2"> {{ $tag.Name }}</div>
-                    <toggle-visibility selector="#tag-{{ $index }} form">
-                        <button class="absolute top-2 right-2">
-                            <svg class="fill-neutral-500 w-5 h-5 inline">
-                                <use xlink:href='{{ publicUrl "assets/img/regular.svg#pen-to-square"}}'></use>
-                            </svg>
-                        </button>
-                    </toggle-visibility>
+                    <button type="button" class="absolute top-2 right-2" data-toggle="#tag-{{ $index }} form">
+                        <svg class="fill-neutral-500 w-5 h-5 inline">
+                            <use xlink:href='{{ publicUrl "assets/img/regular.svg#pen-to-square"}}'></use>
+                        </svg>
+                    </button>
 
 
                     <form class="hidden" action="tags{{if (gt $tag.Id 0)}}/{{$tag.Id}}{{end}}" method="post">
                         <div>
-                            <label class="inline" for="name">Tag Color:</label>
+                            <label class="inline" for="name">Name:</label>
                             <input type="text" id="name" name="name" value="{{$tag.Name}}" />
                         </div>
                         <div>
@@ -42,11 +40,9 @@
                         </div>
 
                         <div class="text-center">
-                            <toggle-visibility selector="#tag-{{ $index }} form">
-                                <button type="button" class="btn-secondary">
-                                    Cancel
-                                </button>
-                            </toggle-visibility>
+                            <button type="button" class="btn-secondary" data-toggle="#tag-{{ $index }} form">
+                                Cancel
+                            </button>
                             <button type="submit" class="btn-primary">
                                 Save
                             </button>
@@ -66,4 +62,8 @@
 
 
     </div>
+{{end}}
+
+{{ define "site-header"}}
+    <script src='{{ publicUrl "assets/toggle.js"}}' defer></script>
 {{end}}

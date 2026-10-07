@@ -2,7 +2,6 @@ package web
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -102,10 +101,6 @@ func (t *HtmlRenderer) loadTemplates() {
 			}
 
 			return fmt.Sprintf("%s%s/%s", serverUrl, t.basePath, asset)
-		},
-		"json": func(v interface{}) template.JS {
-			a, _ := json.Marshal(v)
-			return template.JS(a)
 		},
 		"formatWeekday": func(weekday interface{}) string {
 			if w, ok := weekday.(int); ok {

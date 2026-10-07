@@ -1,0 +1,10 @@
+{{ define "tag-select" }}
+<div class="tag-select">
+    {{ range .Options }}
+    <label style="--tag-color: {{ .Color }}">
+        <input type="checkbox" name="{{ $.Name }}" value="{{ .Id }}" {{ if .Selected }}checked{{ end }}>
+        <span>{{ .Name }}</span>
+    </label>
+    {{ end }}
+</div>
+{{ end }}
