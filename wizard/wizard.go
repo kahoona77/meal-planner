@@ -48,7 +48,9 @@ func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	for _, day := range wizardWeek.Days {
 		mod, err := w.getMealOfTheDay(day, mealIdsWithTags, plannerWeek.Meals)
 		if err != nil {
-			slog.Warn("could not find meal of the day", "err", err)
+			// the day keeps its current meal
+			slog.Warn("could not find meal of the day", "date", day.Date, "err", err)
+			continue
 		}
 
 		plannerWeek.Meals = append(plannerWeek.Meals, mod)

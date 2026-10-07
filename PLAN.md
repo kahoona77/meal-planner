@@ -151,6 +151,12 @@ Decided to keep Trix for now (updated in WP 3). Later, meal descriptions (recipe
 - [ ] goose migration converting existing HTML descriptions with [html-to-markdown](https://github.com/JohannesKaufmann/html-to-markdown) (Go migration, not SQL); check the result on a copy of the DB
 - [ ] Remove `trix.js` / `trix.css`
 
+## Bug fixes found along the way
+
+- Wizard crashed (nil pointer in `isAlreadyPicked`) when no meal matched a day's tags: the failed day was appended as `nil`. Days without a matching meal are now skipped (test in `wizard/wizard_test.go`).
+- `DeleteMeal` kept the meal's `meal_tags`, so the wizard could pick deleted meals. Now deleted in the same transaction (test in `meals/repository_test.go`).
+- Migration `004_remove_orphaned_meal_tags.sql` removes `meal_tags` of meals that no longer exist (one row with `meal_id = 0` in production). Checked on a copy of the production DB: 1 row removed, wizard ran 50 times without error.
+
 ## Open decisions
 
 - Which htmx interactions are worth it? (WP 7)

@@ -25,7 +25,7 @@ App URL: http://localhost:7331/meal-planner during `mise run dev` (live reload),
 
 - Dependencies are **vendored** (`vendor/`): always pass `-mod=vendor`, and run `go mod vendor` after changing `go.mod`.
 - `go-sqlite3` needs **CGO** (`CGO_ENABLED=1`, C compiler present).
-- There is no linter configured. Tests only exist for `web/static.go`.
+- There is no linter configured. Tests exist for `web/static.go`, `meals/repository.go` and `wizard/wizard.go`; DB tests use an in-memory SQLite with all migrations applied (`newTestDb`, `SetMaxOpenConns(1)` is required, otherwise every connection gets its own empty database).
 - Generated files are gitignored: `web/static/main.css` (`mise run css`) and `*_templ.go` (`mise run templ`). Run both after a fresh checkout before `go build`, `go vet` or `go test`; `mise run build`/`test` do it automatically.
 - The binary is self-contained: templates are compiled in, `web/static` and `migrations/*.sql` are embedded (`go:embed`). `web/static/main.css` must therefore be built before `go build`.
 
