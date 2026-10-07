@@ -2,7 +2,7 @@
 
 Guidance for AI coding agents working in this repository.
 
-A family meal planner: server-rendered Go web app (`net/http` + `html/template`) with SQLite, plus a small Vite/Lit/Tailwind frontend bundle.
+A family meal planner: server-rendered Go web app (`net/http` + `html/template`) with SQLite, styled with Tailwind (built by Vite) and a little vanilla JS.
 
 ## Conventions
 
@@ -43,7 +43,8 @@ App URL: http://localhost:8080/meal-planner
 - Domain packages `meals/`, `planner/`, `files/`, `wizard/` – each has `model.go` + `repository.go`; repositories are created per request with `NewRepository(ctx core.Context)` and use `sqlx` with raw SQL. `wizard` generates a random week plan from meals filtered by tags, using the meals and planner repositories.
 - `web/views/` – HTTP handlers (one file per area), glue between repositories and templates.
 - `web/renderer.go` – template engine. Each page template in `web/tmpl/` is parsed together with `base.html` (layout) and all `_*.html` partials; templates are **reloaded on every render**. The `funcMap` there (`basePath`, `assetUrl`, `publicUrl`, `fileUrl`, `formatWeekday`, `json`, ...) is what templates can call. `assetUrl` resolves hashed file names through the Vite manifest in production.
-- `web/assets/` – Vite project: Lit web components and Tailwind CSS. Entry points are `src/index.ts` and `src/index.css` (set in `vite.config.ts`).
+- `web/assets/` – Vite project that only builds the Tailwind CSS (entry `src/index.css`, set in `vite.config.js`). `public/` holds static files served as-is: icons, PWA manifest, vendored Trix editor, and small vanilla JS (`image-select.js` web component, `toggle.js` for `data-toggle` buttons).
+- Templates whose file name starts with `_` are partials and available in every page, e.g. `_tag-select.html` (tag checkboxes, data built by `newTagSelect` in `web/views/tagselect.go`, read back with `formTagIds`).
 - `migrations/` – goose SQL migrations, numbered `NNN_name.sql`; add new ones there, never edit applied ones.
 
 ## Deployment

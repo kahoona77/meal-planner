@@ -70,6 +70,14 @@ func (ctx *WebContext) FormValue(name string) string {
 	return ctx.r.FormValue(name)
 }
 
+// FormValues returns all values of a repeated form field, e.g. checkboxes with the same name.
+func (ctx *WebContext) FormValues(name string) []string {
+	if err := ctx.r.ParseMultipartForm(maxMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
+		return nil
+	}
+	return ctx.r.Form[name]
+}
+
 func (ctx *WebContext) FormFile(name string) (*multipart.FileHeader, error) {
 	if err := ctx.r.ParseMultipartForm(maxMemory); err != nil && !errors.Is(err, http.ErrNotMultipart) {
 		return nil, err

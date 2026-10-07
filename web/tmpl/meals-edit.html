@@ -16,7 +16,7 @@
             </div>
             <div class="my-2">
                 <label>Tags</label>
-                <multi-select id="tags" name="tags" value='{{ json .mealTags }}' options='{{ json .tags }}'></multi-select>
+                {{ template "tag-select" .tagSelect }}
             </div>
             <div class="my-2">
                 <label for="description">Beschreibung</label>

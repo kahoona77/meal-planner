@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite'
 
 // https://vitejs.dev/config/
-// @ts-ignore
 export default defineConfig({
     base: "/meal-planner/assets",
     plugins: [],
@@ -11,7 +10,6 @@ export default defineConfig({
             // overwrite default .html entry
             input: [
                 '/src/index.css',
-                '/src/index.ts',
             ]
         },
     },
