@@ -2,17 +2,35 @@ package web
 
 import (
 	"crypto/sha256"
+	"embed"
 	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"log/slog"
+	"os"
 	"strings"
 	"sync"
 	"time"
 )
 
-// StaticDir holds the static files (images, scripts, built CSS), served under BASE_PATH/assets.
-const StaticDir = "web/static"
+// static holds the static files (images, scripts, built CSS), served under BASE_PATH/assets.
+// The CSS is generated, so `mise run css` has to run before the build.
+//
+//go:embed static
+var static embed.FS
+
+// StaticFS returns the static files: from dir on disk if it is set (development, changes show
+// up without a restart), otherwise the copy embedded in the binary.
+func StaticFS(dir string) fs.FS {
+	if dir != "" {
+		return os.DirFS(dir)
+	}
+	sub, err := fs.Sub(static, "static")
+	if err != nil {
+		panic(err)
+	}
+	return sub
+}
 
 // Assets builds URLs for the static files. Each URL carries a hash of the file
 // content (?v=...), so browsers can cache it forever and still get new versions.

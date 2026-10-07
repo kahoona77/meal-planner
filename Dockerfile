@@ -13,7 +13,6 @@ RUN go test -mod=vendor -v ./...
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
-COPY --from=builder /go/src/app/web/static/ /app/web/static/
 COPY --from=builder /go/src/app/meal-planner /app/
 
 ENTRYPOINT ["/app/meal-planner"]

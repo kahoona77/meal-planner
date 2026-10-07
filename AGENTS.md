@@ -27,16 +27,17 @@ App URL: http://localhost:7331/meal-planner during `mise run dev` (live reload),
 - `go-sqlite3` needs **CGO** (`CGO_ENABLED=1`, C compiler present).
 - There is no linter configured. Tests only exist for `web/static.go`.
 - Generated files are gitignored: `web/static/main.css` (`mise run css`) and `*_templ.go` (`mise run templ`). Run both after a fresh checkout before `go build`, `go vet` or `go test`; `mise run build`/`test` do it automatically.
-- The binary must be run from the repo root: static files (`web/static`) are loaded from a relative path at runtime. Templates are compiled in, `migrations/*.sql` is embedded.
+- The binary is self-contained: templates are compiled in, `web/static` and `migrations/*.sql` are embedded (`go:embed`). `web/static/main.css` must therefore be built before `go build`.
 
 ## Configuration (env vars, `core/config.go`)
 
-| Var         | Default               | Effect                                                                            |
-|-------------|-----------------------|-----------------------------------------------------------------------------------|
-| `PORT`      | `8080`                |                                                                                   |
-| `BASE_PATH` | `/meal-planner`       | All routes are mounted under it; static files are served under `BASE_PATH/assets` |
-| `DB_FILE`   | `meal-planner.sqlite` | SQLite file; migrations run automatically on startup (goose)                      |
-| `LOG_LEVEL` | `info`                | `debug`, `info`, `warn` or `error` (`log/slog`)                                   |
+| Var          | Default               | Effect                                                                                                     |
+|--------------|-----------------------|------------------------------------------------------------------------------------------------------------|
+| `PORT`       | `8080`                |                                                                                                            |
+| `BASE_PATH`  | `/meal-planner`       | All routes are mounted under it; static files are served under `BASE_PATH/assets`                          |
+| `DB_FILE`    | `meal-planner.sqlite` | SQLite file; migrations run automatically on startup (goose)                                               |
+| `LOG_LEVEL`  | `info`                | `debug`, `info`, `warn` or `error` (`log/slog`)                                                            |
+| `STATIC_DIR` | (embedded)            | Serve static files from this directory instead of the embedded copy; set to `web/static` by `mise run dev` |
 
 ## Architecture
 
@@ -47,9 +48,9 @@ App URL: http://localhost:7331/meal-planner during `mise run dev` (live reload),
 - `web/page.go` – `PageMiddleware` puts the base path and the asset URLs into the request context; templates call `web.BasePath(ctx)` and `web.Asset(ctx, "img/solid.svg#plus")`. Always reference static files through `web.Asset`: it adds a content hash (`?v=...`, `web/static.go`), and versioned requests are cached forever by the browser.
 - Inline styles with values from the database go through `colorStyle` (only hex colors pass); meal descriptions are stored HTML from Trix and rendered with `templ.Raw`.
 - `web/styles/main.css` – Tailwind 4 source (theme in `@theme`, content sources via `@source`). Element styles belong in `@layer base`, otherwise they override utilities.
-- `web/static/` – files served as-is under `BASE_PATH/assets`: built `main.css`, icons, PWA manifest, vendored Trix editor, and small vanilla JS (`image-select.js` web component, `toggle.js` for `data-toggle` buttons).
+- `web/static/` – embedded into the binary (`web.StaticFS`), served as-is under `BASE_PATH/assets`: built `main.css`, icons, PWA manifest, vendored Trix editor, and small vanilla JS (`image-select.js` web component, `toggle.js` for `data-toggle` buttons).
 - `migrations/` – goose SQL migrations, numbered `NNN_name.sql`; add new ones there, never edit applied ones.
 
 ## Deployment
 
-Multi-stage `Dockerfile` (builder stage downloads the Tailwind CLI, builds the CSS, generates the templ code, builds a static Go binary and runs the tests; alpine runtime). The Tailwind version in the Dockerfile must match `mise.toml`. GitHub Actions (`.github/workflows/main.yml`) builds the image on every push and pushes it to Docker Hub as `kahoona/meal-planner`: `latest` from `main`, `<version>` from `v*` tags, `dev` from other branches.
+Multi-stage `Dockerfile` (builder stage downloads the Tailwind CLI, builds the CSS, generates the templ code, builds a static Go binary and runs the tests; the alpine runtime image only contains the binary). The Tailwind version in the Dockerfile must match `mise.toml`. GitHub Actions (`.github/workflows/main.yml`) builds the image on every push and pushes it to Docker Hub as `kahoona/meal-planner`: `latest` from `main`, `<version>` from `v*` tags, `dev` from other branches.

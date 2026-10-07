@@ -1,5 +1,5 @@
 /meal-planner.sqlite
 /meal-planner
 /web/static/main.css
-*_templ.go
-*_templ.txt
+/web/**/*_templ.go
+/web/**/*_templ.txt

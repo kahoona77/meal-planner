@@ -19,7 +19,7 @@ func main() {
 	defer app.Ctx.Close()
 
 	basePath := app.Ctx.Config().BasePath
-	static := os.DirFS(web.StaticDir)
+	static := web.StaticFS(app.Ctx.Config().StaticDir)
 	app.Use(web.PageMiddleware(basePath, web.NewAssets(static, basePath)))
 
 	//files.InitDb(app.Ctx)

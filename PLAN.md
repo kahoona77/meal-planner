@@ -12,7 +12,7 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 | 3 | Replace Lit components with plain HTML / vanilla JS | ✅ Done        |
 | 4 | Tailwind 4 standalone CLI, remove Node & Vite       | ✅ Done        |
 | 5 | Migrate templates to templ                          | ✅ Done        |
-| 6 | Embed static assets, single binary                  | ⬜ Open        |
+| 6 | Embed static assets, single binary                  | ✅ Done        |
 | 7 | Add htmx where it helps                             | ⬜ Open        |
 | 8 | Cleanup & docs                                      | ⬜ Open        |
 | 9 | Markdown descriptions instead of Trix (later)       | ⬜ Open        |
@@ -114,12 +114,16 @@ Verified so far: Docker build; all pages and every referenced asset return 200 i
 
 Verified: old (`html/template`) and new build side by side against copies of the DB; all pages have an identical DOM (tags, attributes, text), apart from whitespace in class attributes and a trailing `;` in inline styles. Only intended change: meal cards in the list are links (`<a href>`) instead of `<div onclick>`. All form flows work, also in the Docker image; live reload picks up `.templ` changes. Missed at first: `@source` in `web/styles/main.css` still pointed to the deleted `web/tmpl`, so utilities only used in templates were missing from the CSS (broken bottom nav); now `@source "../views/*.templ"`. After the fix, headless Brave screenshots of all pages (desktop and mobile) are pixel-identical to WP 4.
 
-## 6. Embed static assets, single binary
+## 6. Embed static assets, single binary ✅
 
-- [ ] `embed.FS` for `web/static` (incl. built CSS); templ templates and migrations are already compiled in
-- [ ] Binary no longer depends on the working directory
-- [ ] Dockerfile: runtime image only contains the binary (+ ca-certificates)
-- [ ] Update `AGENTS.md` (remove "must run from repo root")
+- [x] `embed.FS` for `web/static` (incl. built CSS, `web.StaticFS`); templ templates and migrations are already compiled in
+- [x] `STATIC_DIR` env var serves the files from disk instead (set by `mise run dev`, so CSS changes show up without a restart)
+- [x] Binary no longer depends on the working directory
+- [x] Dockerfile: runtime image only contains the binary (+ ca-certificates)
+- [x] Update `AGENTS.md` (remove "must run from repo root")
+- [x] Fixed along the way: `.gitignore` rule `*_templ.go` also hid two generated files inside `vendor/` (templ CLI), so a build from a clean checkout failed; rule is now limited to `/web/**`
+
+Verified: binary started outside the repo serves all pages and assets; build from only the files git would commit (simulated CI) works; Docker image contains only the binary; screenshots of all pages pixel-identical to WP 5; `STATIC_DIR` picks up file changes with a new hash.
 
 ## 7. Add htmx where it helps
 

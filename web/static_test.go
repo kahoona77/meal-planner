@@ -1,6 +1,7 @@
 package web
 
 import (
+	"io/fs"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -37,4 +38,9 @@ func TestAssets_URL_changesWithContent(t *testing.T) {
 
 	assert.NotEqual(t, before, after)
 	assert.True(t, strings.HasPrefix(after, "/assets/main.css?v="))
+}
+
+func TestStaticFS_embedded(t *testing.T) {
+	_, err := fs.Stat(StaticFS(""), "img/solid.svg")
+	assert.NoError(t, err)
 }

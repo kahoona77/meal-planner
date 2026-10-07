@@ -6,10 +6,11 @@ import (
 )
 
 type AppConfig struct {
-	Port     string
-	BasePath string
-	DbFile   string
-	LogLevel slog.Level
+	Port      string
+	BasePath  string
+	DbFile    string
+	LogLevel  slog.Level
+	StaticDir string
 }
 
 func LoadConfiguration() AppConfig {
@@ -29,6 +30,9 @@ func LoadConfiguration() AppConfig {
 	if conf.DbFile == "" {
 		conf.DbFile = "meal-planner.sqlite"
 	}
+
+	// STATIC_DIR serves the static files from disk instead of the copy in the binary (development)
+	conf.StaticDir = os.Getenv("STATIC_DIR")
 
 	// LOG_LEVEL is one of debug, info, warn, error; defaults to info
 	if err := conf.LogLevel.UnmarshalText([]byte(os.Getenv("LOG_LEVEL"))); err != nil {

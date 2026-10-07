@@ -28,7 +28,7 @@ run = "tailwindcss -i web/styles/main.css -o web/static/main.css --watch=always"
 
 [tasks."dev:server"]
 description = "Regenerate templates, restart the Go server and reload the browser on changes"
-env = { CGO_ENABLED = "1" }
+env = { CGO_ENABLED = "1", STATIC_DIR = "web/static" }
 run = """
 go tool templ generate --watch \
   --watch-pattern '(.+\\.go$)|(.+\\.templ$)|(.+_templ\\.txt$)|(web/static/.+\\.(css|js)$)' \
