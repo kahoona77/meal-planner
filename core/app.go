@@ -104,14 +104,20 @@ func (g *Group) DELETE(path string, h HandlerFunc) {
 	g.handle(http.MethodDelete, path, h)
 }
 
-// Static serves the files in dir under path, without directory listings.
-func (g *Group) Static(path string, dir string) {
+// Static serves the files of fsys under path, without directory listings.
+// Requests with a version (?v=...) may be cached forever, all others are revalidated.
+func (g *Group) Static(path string, fsys fs.FS) {
 	prefix := g.prefix + strings.TrimSuffix(path, "/") + "/"
-	fileServer := http.StripPrefix(prefix, http.FileServer(http.Dir(dir)))
+	fileServer := http.StripPrefix(prefix, http.FileServerFS(fsys))
 	g.app.mux.Handle("GET "+prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "/") {
 			http.NotFound(w, r)
 			return
+		}
+		if r.URL.Query().Has("v") {
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		} else {
+			w.Header().Set("Cache-Control", "no-cache")
 		}
 		fileServer.ServeHTTP(w, r)
 	}))

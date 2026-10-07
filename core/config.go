@@ -3,11 +3,9 @@ package core
 import (
 	"log/slog"
 	"os"
-	"strconv"
 )
 
 type AppConfig struct {
-	IsDev    bool
 	Port     string
 	BasePath string
 	DbFile   string
@@ -16,8 +14,6 @@ type AppConfig struct {
 
 func LoadConfiguration() AppConfig {
 	conf := AppConfig{}
-
-	conf.IsDev, _ = strconv.ParseBool(os.Getenv("DEV_MODE"))
 
 	conf.Port = os.Getenv("PORT")
 	if conf.Port == "" {

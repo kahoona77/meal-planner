@@ -14,24 +14,20 @@ import (
 
 const templatesDir = "web/tmpl"
 
+// StaticDir holds the static files (images, scripts, built CSS), served under BASE_PATH/assets.
+const StaticDir = "web/static"
+
 type HtmlRenderer struct {
-	templates    map[string]*template.Template
-	basePath     string
-	isDev        bool
-	manifest     Manifest
-	devServerUrl string
+	templates map[string]*template.Template
+	basePath  string
+	assets    *Assets
 }
 
-func NewRenderer(basePath string, manifest Manifest, isDev bool) *HtmlRenderer {
+func NewRenderer(basePath string, assets *Assets) *HtmlRenderer {
 	renderer := HtmlRenderer{
 		templates: map[string]*template.Template{},
 		basePath:  basePath,
-		manifest:  manifest,
-		isDev:     isDev,
-	}
-
-	if isDev {
-		renderer.devServerUrl = "http://localhost:5173"
+		assets:    assets,
 	}
 
 	renderer.loadTemplates()
@@ -39,18 +35,8 @@ func NewRenderer(basePath string, manifest Manifest, isDev bool) *HtmlRenderer {
 }
 
 func CreateRenderer(ctx *core.Ctx) (core.HtmlRenderer, error) {
-	manifest := EmptyManifest()
-	f := os.DirFS("./")
-
-	if !ctx.Config().IsDev {
-		var err error
-		manifest, err = ParseManifest("web/assets/dist/vite-manifest.json", f)
-		if err != nil {
-			return nil, fmt.Errorf("could not prase manifest-file: %v", err)
-		}
-	}
-
-	return NewRenderer(ctx.Config().BasePath, manifest, ctx.Config().IsDev), nil
+	basePath := ctx.Config().BasePath
+	return NewRenderer(basePath, NewAssets(os.DirFS(StaticDir), basePath)), nil
 }
 
 func (t *HtmlRenderer) loadTemplates() {
@@ -83,25 +69,7 @@ func (t *HtmlRenderer) loadTemplates() {
 			}
 			return fmt.Sprintf("files/%d", id.Int64)
 		},
-		"assetUrl": func(asset string) string {
-			if !t.isDev {
-				asset = t.manifest.File(asset)
-			}
-
-			return fmt.Sprintf("%s%s/assets/%s", t.devServerUrl, t.basePath, asset)
-		},
-		"publicUrl": func(asset string) string {
-			if !t.isDev {
-				asset = t.manifest.File(asset)
-			}
-
-			serverUrl := t.devServerUrl
-			if strings.Contains(asset, ".svg") {
-				serverUrl = ""
-			}
-
-			return fmt.Sprintf("%s%s/%s", serverUrl, t.basePath, asset)
-		},
+		"asset": t.assets.URL,
 		"formatWeekday": func(weekday interface{}) string {
 			if w, ok := weekday.(int); ok {
 				return formatWeekday(w)
@@ -153,9 +121,7 @@ func (t *HtmlRenderer) Render(w io.Writer, name string, data core.TemplateData, 
 		return fmt.Errorf("no such view. (%s)", name)
 	}
 
-	data["isDev"] = t.isDev
 	data["basePath"] = t.basePath
-	data["manifest"] = t.manifest
 
 	return t.templates[name].Execute(w, data)
 }

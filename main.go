@@ -24,7 +24,7 @@ func main() {
 
 	root := app.Group(app.Ctx.Config().BasePath)
 
-	root.Static("/assets", "./web/assets/dist")
+	root.Static("/assets", os.DirFS(web.StaticDir))
 
 	root.GET("/files/{id}", files.GetFile)
 

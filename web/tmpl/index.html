@@ -3,7 +3,7 @@
         <div class="flex w-full my-2">
             <a class="print:hidden" href="offset/{{dec .week.Offset}}">
                 <svg class="w-32 h-8">
-                    <use xlink:href="assets/img/solid.svg#chevron-left"></use>
+                    <use xlink:href='{{ asset "img/solid.svg#chevron-left" }}'></use>
                 </svg>
             </a>
 
@@ -13,14 +13,14 @@
 
             <a class="print:hidden" href="offset/{{inc .week.Offset}}">
                 <svg class="w-32 h-8">
-                    <use xlink:href="assets/img/solid.svg#chevron-right"></use>
+                    <use xlink:href='{{ asset "img/solid.svg#chevron-right" }}'></use>
                 </svg>
             </a>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4 ">
         {{ range .week.Meals }}
-            <a href="planner/{{.Id}}" class="rounded overflow-hidden bg-white shadow-lg grid grid-cols-2 md:block">
+            <a href="planner/{{.Id}}" class="rounded-sm overflow-hidden bg-white shadow-lg grid grid-cols-2 md:block">
                 <div class="px-4 py-2 text-center">
                     <p class="text-gray-700 text-base">
                         {{ formatWeekday .Date.Weekday }} {{ .Date.Format "02.01.2006" }}
@@ -33,7 +33,7 @@
                         <img class="w-full h-24 md:h-64 object-cover object-center" src="{{ fileUrl .Meal.ImageFileId}}"  alt="{{ .Meal.Name }}">
                     {{ else }}
                     <svg class="w-full text-gray-300 h-24 md:h-48" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-                        <use xlink:href='{{ publicUrl "assets/img/solid.svg#burger"}}'></use>
+                        <use xlink:href='{{ asset "img/solid.svg#burger" }}'></use>
                     </svg>
                     {{ end }}
                 </div>
