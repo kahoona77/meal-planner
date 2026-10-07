@@ -1,8 +1,72 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source(none);
 
-:root {
+@source "../tmpl";
+@source "../static/*.js";
+
+@theme {
+  --color-primary: #086699;
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
+@utility tag-select {
+  /* tag chips backed by checkboxes, see web/tmpl/_tag-select.html */
+  @apply flex flex-wrap gap-2 my-2;
+
+  & input {
+    @apply sr-only;
+  }
+
+  & span {
+    @apply inline-block px-3 py-1 rounded-full border border-gray-300 bg-white text-sm text-gray-700 cursor-pointer select-none;
+  }
+
+  /* tinted background so the text stays readable for light and dark tag colors */
+  & input:checked + span {
+    @apply text-gray-900 font-medium;
+    border-color: var(--tag-color, var(--color-primary));
+    background-color: color-mix(
+      in srgb,
+      var(--tag-color, var(--color-primary)) 30%,
+      white
+    );
+  }
+
+  & input:checked + span::before {
+    content: '✓ ';
+  }
+
+  & input:focus-visible + span {
+    @apply ring-2 ring-blue-400;
+  }
+}
+
+@utility btn-primary {
+  @apply py-2 px-4 m-1 inline-block bg-primary text-white leading-4 font-semibold rounded-lg shadow-md hover:bg-sky-800 focus:outline-hidden focus:ring-2 focus:ring-blue-400/75;
+}
+
+@utility btn-secondary {
+  @apply py-2 px-4 m-1 inline-block text-primary leading-4 font-semibold rounded-lg shadow-md hover:bg-gray-50 hover:text-sky-800 focus:outline-hidden focus:ring-2 focus:ring-blue-400/75;
+}
+
+@layer base {
+  :root {
     --grey-darker: hsl(0, 0%, 21%);
     --grey-dark: hsl(0, 0%, 29%);
     --grey: hsl(0, 0%, 48%);
@@ -32,47 +96,47 @@
 
     --container-with: 1200px;
     --mobile-bp: 768px;
+  }
+
+  /* element styles live in the base layer so utilities can override them */
+  body {
+    font-family: "Ubuntu", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #4a4a4a;
+    margin: 0;
+    padding: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  h1, h2, h3, h4 {
+    text-transform: uppercase;
+  }
+
+  a {
+    text-decoration: none;
+    cursor: pointer;
+    color: unset;
+  }
+
+  button {
+    background: none;
+    border: none;
+  }
+
+  /* Tailwind v4 uses cursor: default for buttons, v3 used pointer */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 @layer components {
-    /* tag chips backed by checkboxes, see web/tmpl/_tag-select.html */
-    .tag-select {
-        @apply flex flex-wrap gap-2 my-2;
-    }
-
-    .tag-select input {
-        @apply sr-only;
-    }
-
-    .tag-select span {
-        @apply inline-block px-3 py-1 rounded-full border border-gray-300 bg-white text-sm text-gray-700 cursor-pointer select-none;
-    }
-
-    /* tinted background so the text stays readable for light and dark tag colors */
-    .tag-select input:checked + span {
-        @apply text-gray-900 font-medium;
-        border-color: var(--tag-color, theme('colors.primary'));
-        background-color: color-mix(in srgb, var(--tag-color, theme('colors.primary')) 30%, white);
-    }
-
-    .tag-select input:checked + span::before {
-        content: "✓ ";
-    }
-
-    .tag-select input:focus-visible + span {
-        @apply ring-2 ring-blue-400;
-    }
-
-    .btn-primary {
-        @apply py-2 px-4 m-1 inline-block bg-primary text-white leading-4 font-semibold rounded-lg shadow-md hover:bg-sky-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75;
-    }
-
-    .btn-secondary {
-        @apply py-2 px-4 m-1 inline-block text-primary leading-4 font-semibold rounded-lg shadow-md hover:bg-gray-50 hover:text-sky-800 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75;
-    }
-
     input {
-        @apply shadow-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5;
+        @apply shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-xs focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5;
     }
 
     label  {
@@ -80,38 +144,8 @@
     }
 }
 
-
-
-body {
-    font-family: "Ubuntu", sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    color: #4a4a4a;
-    margin: 0;
-    padding: 0;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-h1, h2, h3, h4 {
-    text-transform: uppercase;
-}
-
-a {
-    text-decoration: none;
-    cursor: pointer;
-    color: unset;
-}
-
 .centered {
     text-align: center;
-}
-
-button {
-    background: none;
-    border: none;
 }
 
 .btn {

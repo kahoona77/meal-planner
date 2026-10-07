@@ -1,21 +1,14 @@
 [tools]
 go = "1.27"
-node = "24"
+"github:tailwindlabs/tailwindcss" = "4.3.3"
 
-[tasks.install]
-description = "Install frontend dependencies"
-dir = "web/assets"
-run = "npm install"
-
-[tasks.build-frontend]
-description = "Build the frontend (Vite)"
-dir = "web/assets"
-depends = ["install"]
-run = "npm run build"
+[tasks.css]
+description = "Build the CSS (Tailwind)"
+run = "tailwindcss -i web/styles/main.css -o web/static/main.css --minify"
 
 [tasks.build]
 description = "Build the Go binary"
-depends = ["build-frontend"]
+depends = ["css"]
 env = { CGO_ENABLED = "1" }
 run = "go build -mod=vendor -o meal-planner"
 
@@ -24,17 +17,15 @@ description = "Run the Go tests"
 env = { CGO_ENABLED = "1" }
 run = "go test -mod=vendor ./..."
 
-[tasks."dev:frontend"]
-description = "Start the Vite dev server (port 5173)"
-dir = "web/assets"
-depends = ["install"]
-run = "npm run dev"
+[tasks."dev:css"]
+description = "Rebuild the CSS on changes"
+run = "tailwindcss -i web/styles/main.css -o web/static/main.css --watch=always"
 
 [tasks."dev:backend"]
-description = "Start the Go server in dev mode (port 8080)"
-env = { CGO_ENABLED = "1", DEV_MODE = "true" }
+description = "Start the Go server (port 8080)"
+env = { CGO_ENABLED = "1" }
 run = "go run -mod=vendor ."
 
 [tasks.dev]
-description = "Start Vite and the Go server in parallel (http://localhost:8080/meal-planner)"
-depends = ["dev:frontend", "dev:backend"]
+description = "Watch the CSS and start the Go server (http://localhost:8080/meal-planner)"
+depends = ["dev:css", "dev:backend"]

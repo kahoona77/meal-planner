@@ -8,7 +8,7 @@
             <div class="w-1/2">
                 <button type="submit" class="btn-primary">
                     <svg class="fill-white w-4 h-4 inline">
-                        <use xlink:href='{{ publicUrl "assets/img/solid.svg#plus"}}'></use>
+                        <use xlink:href='{{ asset "img/solid.svg#plus" }}'></use>
                     </svg>
                     Add Tag
                 </button>
@@ -18,13 +18,13 @@
         <div class="mx-1 my-2 grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {{ range $index, $tag := .tags }}
 
-            <div class="rounded overflow-hidden shadow-lg relative"
+            <div class="rounded-sm overflow-hidden shadow-lg relative"
                  id="tag-{{ $index }}">
                 <div class="p-3">
                     <div class="font-bold text-xl mb-2"> {{ $tag.Name }}</div>
                     <button type="button" class="absolute top-2 right-2" data-toggle="#tag-{{ $index }} form">
-                        <svg class="fill-neutral-500 w-5 h-5 inline">
-                            <use xlink:href='{{ publicUrl "assets/img/regular.svg#pen-to-square"}}'></use>
+                        <svg class="fill-gray-500 w-5 h-5 inline">
+                            <use xlink:href='{{ asset "img/regular.svg#pen-to-square" }}'></use>
                         </svg>
                     </button>
 
@@ -65,5 +65,5 @@
 {{end}}
 
 {{ define "site-header"}}
-    <script src='{{ publicUrl "assets/toggle.js"}}' defer></script>
+    <script src='{{ asset "toggle.js" }}' defer></script>
 {{end}}

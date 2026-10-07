@@ -9,12 +9,13 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 | 0 | Tooling & dependency refresh (mise, Go, CI)         | ✅ Done        |
 | 1 | Replace Echo with `net/http`                        | ✅ Done        |
 | 2 | Replace logrus with `log/slog`                      | ✅ Done        |
-| 3 | Replace Lit components with plain HTML / vanilla JS | 🚧 In progress |
-| 4 | Tailwind 4 standalone CLI, remove Node & Vite       | ⬜ Open        |
+| 3 | Replace Lit components with plain HTML / vanilla JS | ✅ Done        |
+| 4 | Tailwind 4 standalone CLI, remove Node & Vite       | 🚧 In progress |
 | 5 | Migrate templates to templ                          | ⬜ Open        |
 | 6 | Embed static assets, single binary                  | ⬜ Open        |
 | 7 | Add htmx where it helps                             | ⬜ Open        |
 | 8 | Cleanup & docs                                      | ⬜ Open        |
+| 9 | Markdown descriptions instead of Trix (later)       | ⬜ Open        |
 
 Status: ⬜ Open · 🚧 In progress · ✅ Done
 
@@ -70,7 +71,7 @@ Output uses the [tint](https://github.com/lmittmann/tint) handler (compact, colo
 
 Along the way: removed duplicate error logs in handlers (returned errors are logged centrally) and fixed tag log messages that said "meal".
 
-## 3. Replace Lit components with plain HTML / vanilla JS
+## 3. Replace Lit components with plain HTML / vanilla JS ✅
 
 Prerequisite for dropping Node: no TypeScript/Lit build anymore.
 
@@ -80,21 +81,26 @@ Prerequisite for dropping Node: no TypeScript/Lit build anymore.
 - [x] Remove `index.ts`, TypeScript and `tsconfig.json`; Vite only builds `index.css` now
 - [x] Keep `image-select.js` (already vanilla); check it still works
 - [x] Trix editor (vendored `trix.js`/`trix.css`): updated 1.3.1 → 2.1.19 (old files were unmodified upstream copies)
-- [ ] Decide: is `test.html` in `public/img` still needed?
+- [x] Remove `test.html` from `public/img` (not needed)
 
 Verified: tag preselection identical to the old version (meal edit, wizard); saving meals and wizard with/without tags; tag edit toggle and Trix 2 in the browser, no console errors. Selected chips use a tinted background of the tag color (`color-mix`) so they stay readable for light and dark colors.
 
 ## 4. Tailwind 4 standalone CLI, remove Node & Vite
 
-- [ ] Add Tailwind CLI to `mise.toml`
-- [ ] Migrate `index.css` to v4 (`@import "tailwindcss"`, theme colors from `tailwind.config.js` into `@theme`, `@source` for templates; check removed utilities like `ring-opacity-*`)
-- [ ] New asset layout, e.g. `web/static/` (images, manifest, trix, image-select, htmx, built CSS)
-- [ ] Cache busting without Vite manifest (e.g. content hash as query parameter, computed at startup)
-- [ ] Remove `vite-manifest.json` handling, `DEV_MODE` dev-server logic, `web/manifest.go` + tests
-- [ ] Remove `package.json`, `package-lock.json`, `node_modules`, Vite/PostCSS/TS configs
-- [ ] mise tasks: `css` (build), `dev` (Tailwind `--watch` + Go server); drop Node from `mise.toml`
-- [ ] Dockerfile: drop the Node stage, run the Tailwind CLI in the Go build stage
+- [x] Add Tailwind CLI to `mise.toml` (`github:tailwindlabs/tailwindcss`, not in the mise registry)
+- [x] Migrate the CSS to v4 with the official upgrade tool (`ring-opacity-*` replaced by `ring-blue-400/75` first, the tool fails on it); result in `web/styles/main.css` with `source(none)` + explicit `@source` (otherwise Tailwind scans `vendor/`)
+- [x] Element styles (`body`, `a`, `button`, ...) moved into `@layer base`: unlayered CSS beats all Tailwind layers in v4, e.g. `button { background: none }` would remove `bg-primary` from buttons
+- [x] Unused `secondary` color dropped, `neutral` (was an alias of v3 gray) replaced by `gray`
+- [x] New asset layout: `web/static/` (images, manifest, trix, image-select, toggle, built `main.css`), CSS source in `web/styles/`
+- [x] Cache busting without Vite manifest: content hash as `?v=` query parameter (`web/static.go`, recomputed when the file changes); versioned requests get `Cache-Control: immutable`, others `no-cache`
+- [x] Template funcs `assetUrl`/`publicUrl` replaced by `asset`; all relative `assets/...` references go through it
+- [x] Remove `vite-manifest.json` handling, `DEV_MODE`, `web/manifest.go` + tests + `test/data`
+- [x] Remove `web/assets/` (`package.json`, lockfile, `node_modules`, Vite/PostCSS configs)
+- [x] mise tasks: `css` (build), `dev` (Tailwind `--watch=always` + Go server); Node dropped from `mise.toml`
+- [x] Dockerfile: Node stage dropped, Tailwind CLI downloaded in the Go build stage (version must match `mise.toml`)
 - [ ] Visually compare all pages before/after
+
+Verified so far: Docker build; all pages and every referenced asset return 200 in the container; cache headers; `mise run dev` rebuilds the CSS on change. Every class of the old v3 CSS exists in the new CSS, except the two renamed ones (`rounded` → `rounded-sm`, `fill-neutral-500` → `fill-gray-500`). A visual check in the browser is still open (Claude in Chrome was not available).
 
 ## 5. Migrate templates to templ
 
@@ -129,6 +135,15 @@ Verified: tag preselection identical to the old version (meal edit, wizard); sav
 - [ ] Update `AGENTS.md`, `README.md` (how to run, env vars), `mise.toml` tasks
 - [ ] Check `.dockerignore`, `.gitignore`
 - [ ] Optional: release tag `v1.0.0` to test the versioned image
+
+## 9. Markdown descriptions instead of Trix (later)
+
+Decided to keep Trix for now (updated in WP 3). Later, meal descriptions (recipes: headings, ingredient lists, paragraphs) should be stored as Markdown instead of HTML. Best done after templ (WP 5).
+
+- [ ] Edit with a plain `<textarea>`, optionally a few small toolbar buttons that insert Markdown syntax (bold, heading, list)
+- [ ] Render server-side with [goldmark](https://github.com/yuin/goldmark); replaces the unchecked `htmlSafe` output of stored HTML
+- [ ] goose migration converting existing HTML descriptions with [html-to-markdown](https://github.com/JohannesKaufmann/html-to-markdown) (Go migration, not SQL); check the result on a copy of the DB
+- [ ] Remove `trix.js` / `trix.css`
 
 ## Open decisions
 
