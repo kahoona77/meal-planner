@@ -1,0 +1,30 @@
+package views
+
+import "time"
+
+// wizardDay is one row of the wizard: a weekday and the tags meals for it should have.
+type wizardDay struct {
+	Weekday   time.Weekday
+	TagSelect TagSelect
+}
+
+templ wizardPage(start time.Time, end time.Time, days []wizardDay) {
+	@layout(nil) {
+		<form class="mb-32" method="post">
+			<div class="text-center text-lg m-4">
+				{ start.Format(dateFormat) } - { end.Format(dateFormat) }
+			</div>
+			for _, day := range days {
+				<div class="grid md:grid-cols-[8rem_1fr] gap-4 items-center">
+					<div class="w-12">{ weekdayName(day.Weekday) }</div>
+					<div class="w-full">
+						@tagSelectInput(day.TagSelect)
+					</div>
+				</div>
+			}
+			<div class="text-center my-6">
+				<button type="submit" class="bg-primary hover:bg-sky-900 font-bold uppercase text-white text-sm px-8 py-3 rounded-lg">🪄 Generate</button>
+			</div>
+		</form>
+	}
+}

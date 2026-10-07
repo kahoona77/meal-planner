@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
+func InitApp(migrationsFs fs.FS) *App {
 	conf := LoadConfiguration()
 
 	slog.SetDefault(slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
@@ -35,24 +35,28 @@ func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
 	}
 
 	ctx := &Ctx{config: &conf, db: db}
-	renderer, err := rendererFactory(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	return &App{mux: http.NewServeMux(), Ctx: ctx, renderer: renderer}
+	return &App{mux: http.NewServeMux(), Ctx: ctx}
 }
 
 type App struct {
-	mux      *http.ServeMux
-	renderer HtmlRenderer
-	Ctx      *Ctx
+	mux         *http.ServeMux
+	middlewares []func(http.Handler) http.Handler
+	Ctx         *Ctx
+}
+
+// Use adds a middleware that wraps all routes, in the order of the calls.
+func (a *App) Use(middleware func(http.Handler) http.Handler) {
+	a.middlewares = append(a.middlewares, middleware)
 }
 
 // Start listens on addr and serves all registered routes.
 func (a *App) Start(addr string) error {
+	var handler http.Handler = a.mux
+	for i := len(a.middlewares) - 1; i >= 0; i-- {
+		handler = a.middlewares[i](handler)
+	}
 	slog.Info("http server started", "addr", addr)
-	return http.ListenAndServe(addr, logRequests(a.mux))
+	return http.ListenAndServe(addr, logRequests(handler))
 }
 
 func (a *App) Group(prefix string) *Group {
@@ -81,7 +85,7 @@ func (g *Group) pattern(method string, path string) string {
 
 func (g *Group) handle(method string, path string, h HandlerFunc) {
 	g.app.mux.HandleFunc(g.pattern(method, path), func(w http.ResponseWriter, r *http.Request) {
-		ctx := &WebContext{Ctx: g.app.Ctx, renderer: g.app.renderer, w: w, r: r}
+		ctx := &WebContext{Ctx: g.app.Ctx, w: w, r: r}
 		if err := h(ctx); err != nil {
 			handleError(w, r, err)
 		}

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/a-h/templ"
 	"github.com/jmoiron/sqlx"
-	"io"
 	"log/slog"
 	"mime/multipart"
 	"net/http"
@@ -42,9 +42,8 @@ func (ctx *Ctx) Close() {
 // WebContext is passed to every handler and wraps the current request and response.
 type WebContext struct {
 	*Ctx
-	renderer HtmlRenderer
-	w        http.ResponseWriter
-	r        *http.Request
+	w http.ResponseWriter
+	r *http.Request
 }
 
 func (ctx *WebContext) Request() *http.Request {
@@ -102,21 +101,12 @@ func (ctx *WebContext) Blob(code int, contentType string, data []byte) error {
 	return err
 }
 
-func (ctx *WebContext) RenderTemplate(code int, name string, data TemplateData) (err error) {
-	if ctx.renderer == nil {
-		return errors.New("no renderer registered")
-	}
+// Render renders component with the request context and writes it as HTML.
+// The page is rendered completely before anything is sent, so an error still results in an error page.
+func (ctx *WebContext) Render(code int, component templ.Component) error {
 	buf := new(bytes.Buffer)
-	if err = ctx.renderer.Render(buf, name, data, ctx); err != nil {
-		return
+	if err := component.Render(ctx.r.Context(), buf); err != nil {
+		return err
 	}
 	return ctx.Blob(code, "text/html; charset=UTF-8", buf.Bytes())
 }
-
-type HtmlRenderer interface {
-	Render(w io.Writer, name string, data TemplateData, ctx *WebContext) error
-}
-
-type CreateRendererFunc func(ctx *Ctx) (HtmlRenderer, error)
-
-type TemplateData map[string]any

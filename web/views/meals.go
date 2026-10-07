@@ -30,11 +30,7 @@ func Meals(ctx *core.WebContext) error {
 		}
 	}
 
-	data := core.TemplateData{
-		"meals": mealsWithTags,
-	}
-
-	return ctx.RenderTemplate(http.StatusOK, "meals-list.html", data)
+	return ctx.Render(http.StatusOK, mealsPage(mealsWithTags))
 }
 
 func MealEdit(ctx *core.WebContext) error {
@@ -68,10 +64,7 @@ func MealEdit(ctx *core.WebContext) error {
 		selectedIds[i] = mealTag.TagId
 	}
 
-	return ctx.RenderTemplate(http.StatusOK, "meals-edit.html", core.TemplateData{
-		"meal":      meal,
-		"tagSelect": newTagSelect("tags", tags, selectedIds),
-	})
+	return ctx.Render(http.StatusOK, mealEditPage(meal, newTagSelect("tags", tags, selectedIds)))
 }
 
 func MealSave(ctx *core.WebContext) error {

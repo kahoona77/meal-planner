@@ -1,0 +1,100 @@
+package views
+
+import (
+	"meal-planner/meals"
+	"meal-planner/planner"
+	"meal-planner/web"
+	"strconv"
+)
+
+templ weekPage(week planner.Week) {
+	@layout(nil) {
+		<div class="">
+			<div class="flex w-full my-2">
+				<a class="print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset-1)) }>
+					<svg class="w-32 h-8">
+						<use xlink:href={ web.Asset(ctx, "img/solid.svg#chevron-left") }></use>
+					</svg>
+				</a>
+				<div class="flex-1 text-center whitespace-nowrap">
+					{ week.Start.Format(dateFormat) } - { week.End.Format(dateFormat) }
+				</div>
+				<a class="print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset+1)) }>
+					<svg class="w-32 h-8">
+						<use xlink:href={ web.Asset(ctx, "img/solid.svg#chevron-right") }></use>
+					</svg>
+				</a>
+			</div>
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-x-2 gap-y-4 ">
+				for _, mod := range week.Meals {
+					<a href={ templ.SafeURL("planner/" + mod.Id) } class="rounded-sm overflow-hidden bg-white shadow-lg grid grid-cols-2 md:block">
+						<div class="px-4 py-2 text-center">
+							<p class="text-gray-700 text-base">
+								{ weekdayName(mod.Date.Weekday()) } { mod.Date.Format(dateFormat) }
+							</p>
+							<div class="font-bold text-xl mb-2">{ mod.Meal.Name }</div>
+						</div>
+						<div class="w-full text-center">
+							if mod.Meal.ImageFileId.Valid {
+								<img class="w-full h-24 md:h-64 object-cover object-center" src={ fileURL(mod.Meal.ImageFileId) } alt={ mod.Meal.Name }/>
+							} else {
+								<svg class="w-full text-gray-300 h-24 md:h-48" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+									<use xlink:href={ web.Asset(ctx, "img/solid.svg#burger") }></use>
+								</svg>
+							}
+						</div>
+					</a>
+				}
+			</div>
+			<div class="text-center my-6">
+				<a href={ templ.SafeURL("wizard/" + strconv.Itoa(week.Offset)) } class="bg-primary hover:bg-sky-900 font-bold uppercase text-white text-sm px-8 py-3 rounded-lg">🪄 Create new</a>
+			</div>
+		</div>
+	}
+}
+
+templ mealOfDayPage(mod *planner.MealOfTheDay) {
+	@layout(nil) {
+		<div class="meal-of-day">
+			<div class="date-header">
+				{ mod.Date.Format("Mon " + dateFormat) }
+				<a href={ templ.SafeURL("planner/" + mod.Id + "/select") } class="btn small">Ändern</a>
+			</div>
+			<div class="image">
+				@image(mod.Meal.ImageFileId, mod.Meal.Name)
+			</div>
+			<div class="title">
+				{ mod.Meal.Name }
+			</div>
+			<div class="description">
+				// stored HTML from the Trix editor
+				@templ.Raw(mod.Meal.Description)
+			</div>
+		</div>
+	}
+}
+
+templ selectMealOfDayPage(mod *planner.MealOfTheDay, allMeals []*meals.Meal) {
+	@layout(nil) {
+		<div class="meal-of-day-select">
+			<form id="meal-select" action={ templ.SafeURL("planner/" + mod.Id + "/select") } method="post">
+				<div class="card card-1 meal">
+					<input type="radio" id="none" name="selected" value=""/>
+					<label for="none">- leer -</label>
+				</div>
+				for _, meal := range allMeals {
+					<div class="card card-1 meal">
+						<input type="radio" id={ strconv.FormatInt(meal.Id, 10) } name="selected" value={ strconv.FormatInt(meal.Id, 10) } checked?={ meal.Id == mod.MealId.Int64 }/>
+						<div class="image">
+							@image(meal.ImageFileId, meal.Name)
+						</div>
+						<label for={ strconv.FormatInt(meal.Id, 10) }>{ meal.Name }</label>
+					</div>
+				}
+			</form>
+			<div class="submit centered">
+				<button class="btn primary" type="submit" form="meal-select">Speichern</button>
+			</div>
+		</div>
+	}
+}

@@ -10,8 +10,8 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 | 1 | Replace Echo with `net/http`                        | ✅ Done        |
 | 2 | Replace logrus with `log/slog`                      | ✅ Done        |
 | 3 | Replace Lit components with plain HTML / vanilla JS | ✅ Done        |
-| 4 | Tailwind 4 standalone CLI, remove Node & Vite       | 🚧 In progress |
-| 5 | Migrate templates to templ                          | ⬜ Open        |
+| 4 | Tailwind 4 standalone CLI, remove Node & Vite       | ✅ Done        |
+| 5 | Migrate templates to templ                          | ✅ Done        |
 | 6 | Embed static assets, single binary                  | ⬜ Open        |
 | 7 | Add htmx where it helps                             | ⬜ Open        |
 | 8 | Cleanup & docs                                      | ⬜ Open        |
@@ -85,7 +85,7 @@ Prerequisite for dropping Node: no TypeScript/Lit build anymore.
 
 Verified: tag preselection identical to the old version (meal edit, wizard); saving meals and wizard with/without tags; tag edit toggle and Trix 2 in the browser, no console errors. Selected chips use a tinted background of the tag color (`color-mix`) so they stay readable for light and dark colors.
 
-## 4. Tailwind 4 standalone CLI, remove Node & Vite
+## 4. Tailwind 4 standalone CLI, remove Node & Vite ✅
 
 - [x] Add Tailwind CLI to `mise.toml` (`github:tailwindlabs/tailwindcss`, not in the mise registry)
 - [x] Migrate the CSS to v4 with the official upgrade tool (`ring-opacity-*` replaced by `ring-blue-400/75` first, the tool fails on it); result in `web/styles/main.css` with `source(none)` + explicit `@source` (otherwise Tailwind scans `vendor/`)
@@ -98,19 +98,21 @@ Verified: tag preselection identical to the old version (meal edit, wizard); sav
 - [x] Remove `web/assets/` (`package.json`, lockfile, `node_modules`, Vite/PostCSS configs)
 - [x] mise tasks: `css` (build), `dev` (Tailwind `--watch=always` + Go server); Node dropped from `mise.toml`
 - [x] Dockerfile: Node stage dropped, Tailwind CLI downloaded in the Go build stage (version must match `mise.toml`)
-- [ ] Visually compare all pages before/after
+- [x] Visually compare all pages before/after (checked by hand)
 
-Verified so far: Docker build; all pages and every referenced asset return 200 in the container; cache headers; `mise run dev` rebuilds the CSS on change. Every class of the old v3 CSS exists in the new CSS, except the two renamed ones (`rounded` → `rounded-sm`, `fill-neutral-500` → `fill-gray-500`). A visual check in the browser is still open (Claude in Chrome was not available).
+Verified so far: Docker build; all pages and every referenced asset return 200 in the container; cache headers; `mise run dev` rebuilds the CSS on change. Every class of the old v3 CSS exists in the new CSS, except the two renamed ones (`rounded` → `rounded-sm`, `fill-neutral-500` → `fill-gray-500`).
 
-## 5. Migrate templates to templ
+## 5. Migrate templates to templ ✅
 
-- [ ] Add templ to `mise.toml` (CLI) and `go.mod` (runtime)
-- [ ] Decide: commit generated `*_templ.go` files or generate in build (affects Dockerfile and CI)
-- [ ] Layout component (replaces `base.html`) with header, bottom nav, asset links
-- [ ] Migrate page by page: index/week, meal-of-day, meal-of-day select, meals list, meal edit, tags, wizard
-- [ ] Replace template funcs (`basePath`, `assetUrl`, `fileUrl`, `formatWeekday`, `isToday`, ...) with plain Go functions
-- [ ] Remove `web/renderer.go`, `web/tmpl/`, `TemplateData`
-- [ ] Dev workflow: `templ generate --watch` in the `dev` task (decide on live reload via `--proxy`)
+- [x] templ CLI via the `tool` directive in `go.mod` (`go tool templ`, version always matches the runtime library, works offline from `vendor/`); no `mise.toml` entry needed. Downside: `vendor/` grows from 12 to 28 MB (mostly `golang.org/x/tools`)
+- [x] Decided: generated `*_templ.go` are **not** committed (gitignored); `mise run build`/`test`, `mise run dev` and the Dockerfile generate them
+- [x] Layout component (replaces `base.html`) with header, bottom nav, asset links; page specific `<head>` tags as parameter
+- [x] Migrate page by page: week, meal-of-day, meal-of-day select, meals list, meal edit, tags, wizard (one `.templ` file per area next to its handlers in `web/views`)
+- [x] Replace template funcs with plain Go functions (`web.BasePath`/`web.Asset` via request context, `weekdayName`, `fileURL`, `colorStyle`)
+- [x] Remove `web/renderer.go`, `web/format.go`, `web/tmpl/`, `TemplateData`, `RenderTemplate`
+- [x] Decided: live reload via `templ generate --watch --proxy` (`mise run dev`, http://localhost:7331/meal-planner)
+
+Verified: old (`html/template`) and new build side by side against copies of the DB; all pages have an identical DOM (tags, attributes, text), apart from whitespace in class attributes and a trailing `;` in inline styles. Only intended change: meal cards in the list are links (`<a href>`) instead of `<div onclick>`. All form flows work, also in the Docker image; live reload picks up `.templ` changes. Missed at first: `@source` in `web/styles/main.css` still pointed to the deleted `web/tmpl`, so utilities only used in templates were missing from the CSS (broken bottom nav); now `@source "../views/*.templ"`. After the fix, headless Brave screenshots of all pages (desktop and mobile) are pixel-identical to WP 4.
 
 ## 6. Embed static assets, single binary
 
@@ -147,6 +149,4 @@ Decided to keep Trix for now (updated in WP 3). Later, meal descriptions (recipe
 
 ## Open decisions
 
-- Commit generated templ files or generate during build? (WP 5)
-- Live reload in dev: templ `--proxy` or none? (WP 5)
 - Which htmx interactions are worth it? (WP 7)

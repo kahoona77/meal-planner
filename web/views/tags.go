@@ -14,11 +14,7 @@ func Tags(ctx *core.WebContext) error {
 		slog.Error("error loading tags", "err", err)
 	}
 
-	data := core.TemplateData{
-		"tags": tags,
-	}
-
-	return ctx.RenderTemplate(http.StatusOK, "tag-list.html", data)
+	return ctx.Render(http.StatusOK, tagsPage(tags))
 }
 
 func TagSave(ctx *core.WebContext) error {

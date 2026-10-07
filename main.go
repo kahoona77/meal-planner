@@ -15,16 +15,20 @@ import (
 var embedMigrations embed.FS
 
 func main() {
-	app := core.InitApp(web.CreateRenderer, embedMigrations)
+	app := core.InitApp(embedMigrations)
 	defer app.Ctx.Close()
+
+	basePath := app.Ctx.Config().BasePath
+	static := os.DirFS(web.StaticDir)
+	app.Use(web.PageMiddleware(basePath, web.NewAssets(static, basePath)))
 
 	//files.InitDb(app.Ctx)
 	//meals.InitDb(app.Ctx)
 	//planner.InitDb(app.Ctx)
 
-	root := app.Group(app.Ctx.Config().BasePath)
+	root := app.Group(basePath)
 
-	root.Static("/assets", os.DirFS(web.StaticDir))
+	root.Static("/assets", static)
 
 	root.GET("/files/{id}", files.GetFile)
 

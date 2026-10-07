@@ -43,26 +43,19 @@ func Wizard(ctx *core.WebContext) error {
 		date = date.AddDate(0, 0, 1)
 	}
 
-	return ctx.RenderTemplate(http.StatusOK, "wizard.html", core.TemplateData{
-		"week": map[string]any{
-			"start": week.Start,
-			"end":   week.End,
-			"days": func(days []*wizard.Day) []map[string]any {
-				result := make([]map[string]any, len(days))
-				for i, day := range days {
-					selectedIds := make([]int64, len(day.Tags))
-					for j, tag := range day.Tags {
-						selectedIds[j] = tag.TagId
-					}
-					result[i] = map[string]any{
-						"weekday":   day.Weekday,
-						"tagSelect": newTagSelect(fmt.Sprintf("tags_%d", day.Weekday), tags, selectedIds),
-					}
-				}
-				return result
-			}(week.Days),
-		},
-	})
+	days := make([]wizardDay, len(week.Days))
+	for i, day := range week.Days {
+		selectedIds := make([]int64, len(day.Tags))
+		for j, tag := range day.Tags {
+			selectedIds[j] = tag.TagId
+		}
+		days[i] = wizardDay{
+			Weekday:   time.Weekday(day.Weekday),
+			TagSelect: newTagSelect(fmt.Sprintf("tags_%d", day.Weekday), tags, selectedIds),
+		}
+	}
+
+	return ctx.Render(http.StatusOK, wizardPage(week.Start, week.End, days))
 }
 
 func Generate(ctx *core.WebContext) error {

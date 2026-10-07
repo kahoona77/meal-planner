@@ -11,6 +11,9 @@ import (
 	"time"
 )
 
+// StaticDir holds the static files (images, scripts, built CSS), served under BASE_PATH/assets.
+const StaticDir = "web/static"
+
 // Assets builds URLs for the static files. Each URL carries a hash of the file
 // content (?v=...), so browsers can cache it forever and still get new versions.
 type Assets struct {

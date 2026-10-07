@@ -1,0 +1,71 @@
+package views
+
+import (
+	"database/sql"
+	"meal-planner/web"
+)
+
+// layout is the frame of every page. head adds page specific tags to <head> and may be nil.
+templ layout(head templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<base href={ web.BasePath(ctx) }/>
+			<title>Meal-Planner</title>
+			<link rel="apple-touch-icon" sizes="180x180" href={ web.Asset(ctx, "img/apple-touch-icon.png") }/>
+			<link rel="icon" type="image/png" sizes="32x32" href={ web.Asset(ctx, "img/favicon-32x32.png") }/>
+			<link rel="icon" type="image/png" sizes="16x16" href={ web.Asset(ctx, "img/favicon-16x16.png") }/>
+			<link rel="manifest" href={ web.Asset(ctx, "manifest.json") }/>
+			<link rel="mask-icon" href={ web.Asset(ctx, "img/safari-pinned-tab.svg") } color="#5bbad5"/>
+			<meta name="msapplication-TileColor" content="#da532c"/>
+			<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+			<meta name="theme-color" content="#ffffff"/>
+			<link rel="stylesheet" href={ web.Asset(ctx, "main.css") }/>
+			if head != nil {
+				@head
+			}
+		</head>
+		<body class="bg-gray-50">
+			<div>
+				<div class="header">
+					Meal Planner
+				</div>
+			</div>
+			<div class="content">
+				{ children... }
+			</div>
+			<div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-primary text-white border-t border-gray-200 print:hidden">
+				<div class="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+					@navLink("", "img/regular.svg#calendar-days", "Planner")
+					@navLink("meals", "img/solid.svg#burger", "Meals")
+					@navLink("tags", "img/solid.svg#tags", "Tags")
+				</div>
+			</div>
+		</body>
+	</html>
+}
+
+templ navLink(href string, icon string, label string) {
+	<a href={ templ.SafeURL(href) } type="button" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group">
+		<svg class="w-5 h-5 mb-2 text-white group-hover:text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+			<use xlink:href={ web.Asset(ctx, icon) }></use>
+		</svg>
+		<span class="text-sm text-white group-hover:text-primary">{ label }</span>
+	</a>
+}
+
+// image shows an uploaded image, or the placeholder icon if there is none.
+templ image(fileId sql.NullInt64, alt string) {
+	if fileId.Valid {
+		<img src={ fileURL(fileId) } alt={ alt }/>
+	} else {
+		<div class="placeholder">
+			<svg>
+				<use xlink:href={ web.Asset(ctx, "img/solid.svg#hamburger") }></use>
+			</svg>
+		</div>
+	}
+}

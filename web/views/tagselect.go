@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-// TagSelect is the data for the "tag-select" partial: one checkbox per tag,
+// TagSelect is the data for tagSelectInput: one checkbox per tag,
 // submitted as the repeated form field Name with the tag ids as values.
 type TagSelect struct {
 	Name    string
