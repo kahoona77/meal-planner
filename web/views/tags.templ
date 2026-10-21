@@ -7,12 +7,8 @@ import (
 	"strconv"
 )
 
-templ tagsHead() {
-	<script src={ web.Asset(ctx, "toggle.js") } defer></script>
-}
-
 templ tagsPage(tags []*meals.Tag) {
-	@layout(tagsHead()) {
+	@layout() {
 		<div class="tags container-lg mx-2">
 			<form class="flex flex-row gap-1" action="tags" method="post">
 				<div class="w-1/2">

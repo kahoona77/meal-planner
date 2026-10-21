@@ -5,8 +5,8 @@ import (
 	"meal-planner/web"
 )
 
-// layout is the frame of every page. head adds page specific tags to <head> and may be nil.
-templ layout(head templ.Component) {
+// layout is the frame of every page.
+templ layout() {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -24,11 +24,16 @@ templ layout(head templ.Component) {
 			<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 			<meta name="theme-color" content="#ffffff"/>
 			<link rel="stylesheet" href={ web.Asset(ctx, "main.css") }/>
-			if head != nil {
-				@head
-			}
+			<link rel="stylesheet" type="text/css" href={ web.Asset(ctx, "trix.css") }/>
+			// All scripts are loaded on every page: boosted navigation only swaps the <body>,
+			// scripts in the <head> of the next page would not be loaded.
+			<script src={ web.Asset(ctx, "htmx.min.js") }></script>
+			<script type="text/javascript" src={ web.Asset(ctx, "trix.js") }></script>
+			<script type="text/javascript" src={ web.Asset(ctx, "image-select.js") }></script>
+			<script src={ web.Asset(ctx, "toggle.js") } defer></script>
 		</head>
-		<body class="bg-gray-50">
+		// links and forms load the next page in the background and only swap the <body>
+		<body class="bg-gray-50" hx-boost:inherited="true">
 			<div>
 				<div class="header">
 					Meal Planner

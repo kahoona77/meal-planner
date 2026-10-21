@@ -13,7 +13,7 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 | 4 | Tailwind 4 standalone CLI, remove Node & Vite       | ✅ Done        |
 | 5 | Migrate templates to templ                          | ✅ Done        |
 | 6 | Embed static assets, single binary                  | ✅ Done        |
-| 7 | Add htmx where it helps                             | ⬜ Open        |
+| 7 | Add htmx where it helps                             | ✅ Done (A)    |
 | 8 | Cleanup & docs                                      | ⬜ Open        |
 | 9 | Markdown descriptions instead of Trix (later)       | ⬜ Open        |
 
@@ -125,15 +125,22 @@ Verified: old (`html/template`) and new build side by side against copies of the
 
 Verified: binary started outside the repo serves all pages and assets; build from only the files git would commit (simulated CI) works; Docker image contains only the binary; screenshots of all pages pixel-identical to WP 5; `STATIC_DIR` picks up file changes with a new hash.
 
-## 7. Add htmx where it helps
+## 7. Add htmx where it helps ✅ (stage A)
 
-- [ ] Vendor `htmx.min.js` into `web/static`, include in layout
-- [ ] Candidates (decide case by case):
-  - week navigation (`/offset/{n}`) without full reload
-  - meal-of-day select → swap only the day card
-  - tag edit inline (replaces `toggle-visibility`)
-  - wizard result preview
-- [ ] Handlers return fragments for htmx requests (`HX-Request` header), full pages otherwise
+Decided: stage A now, B maybe later, C as a separate feature package after the modernization. Not doing: own fragment handling for the week navigation (boost covers it), wizard preview.
+
+Stage A – basics:
+- [x] htmx 4.0.0 vendored into `web/static/htmx.min.js` (htmx 4: inheritance is explicit, `hx-boost:inherited`; error responses are swapped by default)
+- [x] `hx-boost:inherited="true"` on `<body>`: all links and forms load in the background and swap the body, URL and back button keep working (boosted forms push the final URL after the redirect)
+- [x] All scripts (htmx, Trix, image-select, toggle) and `trix.css` are loaded in the layout on every page: a boosted swap does not load `<head>` scripts of the next page. `layout()` lost its `head` parameter
+- [x] `hx-confirm` on deleting a meal (it deleted without asking before)
+- [x] Wizard form got an explicit `action`: htmx resolves a missing `action` against `<base href>` instead of the current URL, so generating posted to `/meal-planner/` (405)
+
+Verified with a scripted headless Brave (chromedp, not in the repo) against a copy of the DB: 28 checks for navigation without reload, back button, Trix/image-select after boosted navigation, saving with redirect, image upload, delete with cancel/confirm, tag edit, wizard, day select, 404 page. Screenshots pixel-identical to the previous commit.
+
+Stage B – later, maybe: edit and add tags inline (form posts via htmx, handler returns only `tagCard` for `HX-Request`).
+
+Stage C – separate feature package: "re-roll" a single day in the week view; pick the meal of a day directly in the week view.
 
 ## 8. Cleanup & docs
 

@@ -8,7 +8,7 @@ import (
 )
 
 templ weekPage(week planner.Week) {
-	@layout(nil) {
+	@layout() {
 		<div class="">
 			<div class="flex w-full my-2">
 				<a class="print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset-1)) }>
@@ -54,7 +54,7 @@ templ weekPage(week planner.Week) {
 }
 
 templ mealOfDayPage(mod *planner.MealOfTheDay) {
-	@layout(nil) {
+	@layout() {
 		<div class="meal-of-day">
 			<div class="date-header">
 				{ mod.Date.Format("Mon " + dateFormat) }
@@ -75,7 +75,7 @@ templ mealOfDayPage(mod *planner.MealOfTheDay) {
 }
 
 templ selectMealOfDayPage(mod *planner.MealOfTheDay, allMeals []*meals.Meal) {
-	@layout(nil) {
+	@layout() {
 		<div class="meal-of-day-select">
 			<form id="meal-select" action={ templ.SafeURL("planner/" + mod.Id + "/select") } method="post">
 				<div class="card card-1 meal">

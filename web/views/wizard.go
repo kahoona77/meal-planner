@@ -55,7 +55,7 @@ func Wizard(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.Render(http.StatusOK, wizardPage(week.Start, week.End, days))
+	return ctx.Render(http.StatusOK, wizardPage(offset, week.Start, week.End, days))
 }
 
 func Generate(ctx *core.WebContext) error {

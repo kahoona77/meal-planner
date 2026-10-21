@@ -1,6 +1,9 @@
 package views
 
-import "time"
+import (
+	"strconv"
+	"time"
+)
 
 // wizardDay is one row of the wizard: a weekday and the tags meals for it should have.
 type wizardDay struct {
@@ -8,9 +11,9 @@ type wizardDay struct {
 	TagSelect TagSelect
 }
 
-templ wizardPage(start time.Time, end time.Time, days []wizardDay) {
-	@layout(nil) {
-		<form class="mb-32" method="post">
+templ wizardPage(offset int, start time.Time, end time.Time, days []wizardDay) {
+	@layout() {
+		<form class="mb-32" action={ templ.SafeURL("wizard/" + strconv.Itoa(offset)) } method="post">
 			<div class="text-center text-lg m-4">
 				{ start.Format(dateFormat) } - { end.Format(dateFormat) }
 			</div>

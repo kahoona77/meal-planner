@@ -7,7 +7,7 @@ import (
 )
 
 templ mealsPage(mealsWithTags []*MealWithTags) {
-	@layout(nil) {
+	@layout() {
 		<div class="meals">
 			for _, meal := range mealsWithTags {
 				<a href={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10)) } class="card card-1 meal">
@@ -35,16 +35,10 @@ templ mealsPage(mealsWithTags []*MealWithTags) {
 	}
 }
 
-templ mealEditHead() {
-	<link rel="stylesheet" type="text/css" href={ web.Asset(ctx, "trix.css") }/>
-	<script type="text/javascript" src={ web.Asset(ctx, "trix.js") }></script>
-	<script type="text/javascript" src={ web.Asset(ctx, "image-select.js") }></script>
-}
-
 templ mealEditPage(meal *meals.Meal, tagSelect TagSelect) {
-	@layout(mealEditHead()) {
+	@layout() {
 		<div class="meals-edit">
-			<form id="meal-delete" action={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10) + "/delete") } method="post" hidden></form>
+			<form id="meal-delete" action={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10) + "/delete") } method="post" hidden hx-confirm="Wirklich löschen?"></form>
 			<form id="meal-edit" action={ templ.SafeURL(mealSaveURL(meal)) } method="post" enctype="multipart/form-data">
 				<div class="my-2">
 					<image-select name="image" src={ fileURL(meal.ImageFileId) }></image-select>
