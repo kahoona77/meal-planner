@@ -3,63 +3,51 @@ package views
 import (
 	"fmt"
 	"meal-planner/meals"
-	"meal-planner/web"
 	"strconv"
 )
 
 templ tagsPage(tags []*meals.Tag) {
 	@layout() {
-		<div class="tags container-lg mx-2">
-			<form class="flex flex-row gap-1" action="tags" method="post">
-				<div class="w-1/2">
-					<input type="text" name="name" placeholder="Tag"/>
-				</div>
-				<div class="w-1/2">
-					<button type="submit" class="btn-primary">
-						<svg class="fill-white w-4 h-4 inline">
-							<use xlink:href={ web.Asset(ctx, "img/solid.svg#plus") }></use>
-						</svg>
-						Add Tag
-					</button>
-				</div>
-			</form>
-			<div class="mx-1 my-2 grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-				for i, tag := range tags {
-					@tagCard(fmt.Sprintf("tag-%d", i), tag)
-				}
-			</div>
+		<form class="flex gap-2" action="tags" method="post">
+			<input type="text" name="name" placeholder="Tag" aria-label="New tag" class="min-w-0 flex-1"/>
+			<button type="submit" class="btn-primary shrink-0">
+				@icon("img/solid.svg#plus", "size-4")
+				Add Tag
+			</button>
+		</form>
+		<div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			for i, tag := range tags {
+				@tagCard(fmt.Sprintf("tag-%d", i), tag)
+			}
 		</div>
 	}
 }
 
 templ tagCard(id string, tag *meals.Tag) {
-	<div class="rounded-sm overflow-hidden shadow-lg relative" id={ id }>
-		<div class="p-3">
-			<div class="font-bold text-xl mb-2">{ tag.Name }</div>
-			<button type="button" class="absolute top-2 right-2" data-toggle={ "#" + id + " form" }>
-				<svg class="fill-gray-500 w-5 h-5 inline">
-					<use xlink:href={ web.Asset(ctx, "img/regular.svg#pen-to-square") }></use>
-				</svg>
+	<div class="card overflow-hidden border-l-[6px] border-gray-300" style={ colorStyle("border-left-color", tag.Color) } id={ id }>
+		<div class="flex items-center gap-2 py-1.5 pr-1.5 pl-3">
+			<span class="flex-1 truncate font-semibold text-gray-900">{ tag.Name }</span>
+			<button type="button" class="btn-icon" aria-label="Edit" data-toggle={ "#" + id + " form" }>
+				@icon("img/regular.svg#pen-to-square", "size-4")
 			</button>
-			<form class="hidden" action={ templ.SafeURL("tags/" + strconv.FormatInt(tag.Id, 10)) } method="post">
-				<div>
-					<label class="inline" for="name">Name:</label>
-					<input type="text" id="name" name="name" value={ tag.Name }/>
-				</div>
-				<div>
-					<label class="inline" for="color">Tag Color:</label>
-					<input type="color" id="color" name="color" value={ tag.Color } class="p-0"/>
-				</div>
-				<div class="text-center">
-					<button type="button" class="btn-secondary" data-toggle={ "#" + id + " form" }>
-						Cancel
-					</button>
-					<button type="submit" class="btn-primary">
-						Save
-					</button>
-				</div>
-			</form>
 		</div>
-		<div class="h-3" style={ colorStyle("background-color", tag.Color) }></div>
+		<form class="hidden space-y-3 border-t border-gray-100 p-3" action={ templ.SafeURL("tags/" + strconv.FormatInt(tag.Id, 10)) } method="post">
+			<div>
+				<label class="form-label" for={ id + "-name" }>Name</label>
+				<input type="text" id={ id + "-name" } name="name" value={ tag.Name }/>
+			</div>
+			<div>
+				<label class="form-label" for={ id + "-color" }>Tag Color</label>
+				<input type="color" id={ id + "-color" } name="color" value={ tag.Color } class="h-10 w-20 cursor-pointer rounded-lg border border-gray-300 bg-white p-1"/>
+			</div>
+			<div class="flex justify-end gap-2">
+				<button type="button" class="btn-secondary" data-toggle={ "#" + id + " form" }>
+					Cancel
+				</button>
+				<button type="submit" class="btn-primary">
+					Save
+				</button>
+			</div>
+		</form>
 	</div>
 }

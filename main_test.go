@@ -122,6 +122,7 @@ func TestPages(t *testing.T) {
 		contains string
 	}{
 		{"/", "Create new"},
+		{"/", `href="planner/` + time.Now().Format(planner.MealOfDayDateFormat) + `/select"`}, // nothing planned yet
 		{"/offset/-1", "Create new"},
 		{"/planner/2026_10_05", "<div>heiß</div>"},
 		{"/planner/2026_10_05/select", `value="1" checked`},
@@ -139,6 +140,45 @@ func TestPages(t *testing.T) {
 			assert.Contains(t, body, tt.contains)
 			assert.Contains(t, body, `<base href="/meal-planner/">`)
 		})
+	}
+}
+
+func TestWeekShowsNextMeal(t *testing.T) {
+	app := newTestApp(t)
+	planMeal := func(date time.Time, mealId int) {
+		app.db.MustExec(`INSERT OR REPLACE INTO meals_of_day (id, date, meal_id) VALUES (?, ?, ?)`,
+			date.Format(planner.MealOfDayDateFormat), date.Format(time.DateOnly), mealId)
+	}
+
+	_, body := app.get(basePath + "/")
+	assert.NotContains(t, body, "<div>heiß</div>")
+
+	// the next planned day is shown in full, with tags and description
+	tomorrow := time.Now().AddDate(0, 0, 1)
+	if planner.GetStartWeek(tomorrow).After(time.Now()) {
+		t.Skip("tomorrow is in the next week")
+	}
+	planMeal(tomorrow, 1)
+	_, body = app.get(basePath + "/")
+	assert.Contains(t, body, "Als Nächstes")
+	assert.Contains(t, body, "<div>heiß</div>")
+	assert.Contains(t, body, `--tag-color: #61187c`)
+
+	// today comes first
+	planMeal(time.Now(), 2)
+	_, body = app.get(basePath + "/")
+	assert.Contains(t, body, "Heute")
+	assert.NotContains(t, body, "<div>heiß</div>")
+}
+
+func TestActiveNavLink(t *testing.T) {
+	app := newTestApp(t)
+
+	tests := map[string]string{"/": "", "/planner/2026_10_05": "", "/meals": "meals", "/meals/1": "meals", "/tags": "tags"}
+	for path, href := range tests {
+		_, body := app.get(basePath + path)
+		assert.Contains(t, body, `<a href="`+href+`" aria-current="page"`, path)
+		assert.Equal(t, 1, strings.Count(body, `aria-current="page"`), path)
 	}
 }
 

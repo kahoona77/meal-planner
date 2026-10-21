@@ -26,7 +26,15 @@ func MealOfDay(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.Render(http.StatusOK, mealOfDayPage(mealOfDay))
+	var tags []*meals.MealTag
+	if mealOfDay.Meal.Id > 0 {
+		tags, err = mealsRepo.GetMealTags(mealOfDay.Meal.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return ctx.Render(http.StatusOK, mealOfDayPage(mealOfDay, tags))
 }
 
 func SelectMealOfDayView(ctx *core.WebContext) error {

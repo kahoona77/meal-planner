@@ -13,20 +13,24 @@ type wizardDay struct {
 
 templ wizardPage(offset int, start time.Time, end time.Time, days []wizardDay) {
 	@layout() {
-		<form class="mb-32" action={ templ.SafeURL("wizard/" + strconv.Itoa(offset)) } method="post">
-			<div class="text-center text-lg m-4">
-				{ start.Format(dateFormat) } - { end.Format(dateFormat) }
+		<form class="mx-auto max-w-3xl" action={ templ.SafeURL("wizard/" + strconv.Itoa(offset)) } method="post">
+			<div class="mb-4 text-center">
+				<div class="text-xs font-semibold tracking-wider text-primary uppercase">KW { strconv.Itoa(isoWeek(start)) }</div>
+				<div class="font-semibold text-gray-900">{ start.Format(dateFormat) } – { end.Format(dateFormat) }</div>
 			</div>
-			for _, day := range days {
-				<div class="grid md:grid-cols-[8rem_1fr] gap-4 items-center">
-					<div class="w-12">{ weekdayName(day.Weekday) }</div>
-					<div class="w-full">
+			<div class="card divide-y divide-gray-100">
+				for _, day := range days {
+					<div class="grid gap-2 p-3 sm:grid-cols-[7rem_1fr] sm:items-center sm:gap-4 sm:p-4">
+						<div class="font-semibold text-gray-900">{ weekdayName(day.Weekday) }</div>
 						@tagSelectInput(day.TagSelect)
 					</div>
-				</div>
-			}
-			<div class="text-center my-6">
-				<button type="submit" class="bg-primary hover:bg-sky-900 font-bold uppercase text-white text-sm px-8 py-3 rounded-lg">🪄 Generate</button>
+				}
+			</div>
+			<div class="mt-6 text-center">
+				<button type="submit" class="btn-primary px-6 py-3">
+					@icon("img/solid.svg#wand-magic-sparkles", "size-4")
+					Generate
+				</button>
 			</div>
 		</form>
 	}

@@ -2,6 +2,7 @@ package views
 
 import (
 	"database/sql"
+	"meal-planner/meals"
 	"meal-planner/web"
 )
 
@@ -22,55 +23,87 @@ templ layout() {
 			<link rel="mask-icon" href={ web.Asset(ctx, "img/safari-pinned-tab.svg") } color="#5bbad5"/>
 			<meta name="msapplication-TileColor" content="#da532c"/>
 			<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-			<meta name="theme-color" content="#ffffff"/>
+			<meta name="theme-color" content="#086699"/>
 			<link rel="stylesheet" href={ web.Asset(ctx, "main.css") }/>
-			<link rel="stylesheet" type="text/css" href={ web.Asset(ctx, "trix.css") }/>
 			// All scripts are loaded on every page: boosted navigation only swaps the <body>,
 			// scripts in the <head> of the next page would not be loaded.
 			<script src={ web.Asset(ctx, "htmx.min.js") }></script>
 			<script type="text/javascript" src={ web.Asset(ctx, "trix.js") }></script>
-			<script type="text/javascript" src={ web.Asset(ctx, "image-select.js") }></script>
+			<script src={ web.Asset(ctx, "image-preview.js") } defer></script>
 			<script src={ web.Asset(ctx, "toggle.js") } defer></script>
 		</head>
 		// links and forms load the next page in the background and only swap the <body>
-		<body class="bg-gray-50" hx-boost:inherited="true">
-			<div>
-				<div class="header">
-					Meal Planner
+		<body class="min-h-dvh bg-gray-50 text-gray-800 antialiased" hx-boost:inherited="true">
+			<header class="sticky top-0 z-40 bg-primary text-white shadow-sm print:hidden">
+				<div class="mx-auto flex h-12 max-w-6xl items-center gap-2 px-4">
+					<img src={ web.Asset(ctx, "img/chef.svg") } alt="" class="size-6 brightness-0 invert"/>
+					<span class="font-semibold tracking-wide">Meal Planner</span>
 				</div>
-			</div>
-			<div class="content">
+			</header>
+			<main class="mx-auto max-w-6xl px-4 pt-4 pb-28 print:p-0">
 				{ children... }
-			</div>
-			<div class="fixed bottom-0 left-0 z-50 w-full h-16 bg-primary text-white border-t border-gray-200 print:hidden">
-				<div class="grid h-full max-w-lg grid-cols-3 mx-auto font-medium">
+			</main>
+			<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur print:hidden">
+				<div class="mx-auto grid h-16 max-w-md grid-cols-3">
 					@navLink("", "img/regular.svg#calendar-days", "Planner")
 					@navLink("meals", "img/solid.svg#burger", "Meals")
 					@navLink("tags", "img/solid.svg#tags", "Tags")
 				</div>
-			</div>
+			</nav>
 		</body>
 	</html>
 }
 
-templ navLink(href string, icon string, label string) {
-	<a href={ templ.SafeURL(href) } type="button" class="inline-flex flex-col items-center justify-center px-5 hover:bg-gray-50 group">
-		<svg class="w-5 h-5 mb-2 text-white group-hover:text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-			<use xlink:href={ web.Asset(ctx, icon) }></use>
-		</svg>
-		<span class="text-sm text-white group-hover:text-primary">{ label }</span>
-	</a>
+templ navLink(href string, iconName string, label string) {
+	if navSection(web.Path(ctx)) == href {
+		<a href={ templ.SafeURL(href) } aria-current="page" class="flex flex-col items-center justify-center gap-1 text-xs font-semibold text-primary">
+			<span class="flex h-7 w-14 items-center justify-center rounded-full bg-primary-100">
+				@icon(iconName, "size-5")
+			</span>
+			{ label }
+		</a>
+	} else {
+		<a href={ templ.SafeURL(href) } class="flex flex-col items-center justify-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900">
+			<span class="flex h-7 w-14 items-center justify-center">
+				@icon(iconName, "size-5")
+			</span>
+			{ label }
+		</a>
+	}
 }
 
-// image shows an uploaded image, or the placeholder icon if there is none.
-templ image(fileId sql.NullInt64, alt string) {
+// icon renders a symbol of an SVG sprite, e.g. icon("img/solid.svg#plus", "size-5").
+// It is filled with the text color.
+templ icon(name string, class string) {
+	<svg class={ class } aria-hidden="true" fill="currentColor">
+		<use href={ web.Asset(ctx, name) }></use>
+	</svg>
+}
+
+// image shows an uploaded image, or a placeholder icon if there is none. class sets the
+// size (and e.g. the rounding) of both.
+templ image(fileId sql.NullInt64, alt string, class string) {
 	if fileId.Valid {
-		<img src={ fileURL(fileId) } alt={ alt }/>
+		<img src={ fileURL(fileId) } alt={ alt } class={ "object-cover", class }/>
 	} else {
-		<div class="placeholder">
-			<svg>
-				<use xlink:href={ web.Asset(ctx, "img/solid.svg#hamburger") }></use>
-			</svg>
-		</div>
+		@imagePlaceholder(class)
 	}
+}
+
+templ imagePlaceholder(class string) {
+	<div class={ "flex items-center justify-center bg-gray-100 text-gray-300", class }>
+		@icon("img/solid.svg#burger", "size-1/3 max-h-24 max-w-24")
+	</div>
+}
+
+// tagChip shows the name of a tag in its color.
+templ tagChip(tag meals.Tag) {
+	<span class="chip" style={ colorStyle("--tag-color", tag.Color) }>{ tag.Name }</span>
+}
+
+// fab is the floating action button above the bottom navigation.
+templ fab(href string, iconName string, label string) {
+	<a href={ templ.SafeURL(href) } aria-label={ label } title={ label } class="fixed right-[max(1rem,calc((100vw-72rem)/2+1rem))] bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-700 print:hidden">
+		@icon(iconName, "size-6")
+	</a>
 }

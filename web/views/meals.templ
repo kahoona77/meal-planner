@@ -2,67 +2,81 @@ package views
 
 import (
 	"meal-planner/meals"
-	"meal-planner/web"
 	"strconv"
 )
 
 templ mealsPage(mealsWithTags []*MealWithTags) {
 	@layout() {
-		<div class="meals">
+		<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
 			for _, meal := range mealsWithTags {
-				<a href={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10)) } class="card card-1 meal">
-					<div class="image">
-						@image(meal.ImageFileId, meal.Name)
-					</div>
-					<div class="title">
-						<div class="text">{ meal.Name }</div>
-					</div>
-					<div class="tags">
-						for _, tag := range meal.Tags {
-							<div style={ colorStyle("background-color", tag.Color) }>
-								<span class="text-white ">{ tag.Name }</span>
+				<a href={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10)) } class="card overflow-hidden transition-shadow hover:shadow-md">
+					@image(meal.ImageFileId, meal.Name, "aspect-[4/3] w-full")
+					<div class="p-2.5">
+						<h2 class="truncate font-semibold text-gray-900">{ meal.Name }</h2>
+						if len(meal.Tags) > 0 {
+							<div class="mt-1.5 flex flex-wrap gap-1">
+								for _, tag := range meal.Tags {
+									@tagChip(tag.Tag)
+								}
 							</div>
 						}
 					</div>
 				</a>
 			}
-			<a href="meals/new" class="flab">
-				<svg>
-					<use xlink:href={ web.Asset(ctx, "img/solid.svg#plus") }></use>
-				</svg>
-			</a>
 		</div>
+		@fab("meals/new", "img/solid.svg#plus", "New meal")
 	}
 }
 
 templ mealEditPage(meal *meals.Meal, tagSelect TagSelect) {
 	@layout() {
-		<div class="meals-edit">
-			<form id="meal-delete" action={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10) + "/delete") } method="post" hidden hx-confirm="Wirklich löschen?"></form>
-			<form id="meal-edit" action={ templ.SafeURL(mealSaveURL(meal)) } method="post" enctype="multipart/form-data">
-				<div class="my-2">
-					<image-select name="image" src={ fileURL(meal.ImageFileId) }></image-select>
-				</div>
-				<div class="my-2">
-					<label for="name">Name</label>
+		<div class="mx-auto max-w-2xl">
+			if meal.Id > 0 {
+				<form id="meal-delete" action={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10) + "/delete") } method="post" hidden hx-confirm="Wirklich löschen?"></form>
+			}
+			<form id="meal-edit" class="card space-y-5 p-4 sm:p-6" action={ templ.SafeURL(mealSaveURL(meal)) } method="post" enctype="multipart/form-data">
+				@imageInput("image", meal)
+				<div>
+					<label class="form-label" for="name">Name</label>
 					<input type="text" id="name" name="name" value={ meal.Name }/>
 				</div>
-				<div class="my-2">
-					<label>Tags</label>
+				<fieldset>
+					<legend class="form-label">Tags</legend>
 					@tagSelectInput(tagSelect)
-				</div>
-				<div class="my-2">
-					<label for="description">Beschreibung</label>
+				</fieldset>
+				<div>
+					<label class="form-label" for="description">Beschreibung</label>
 					<input id="description" type="hidden" name="description" value={ meal.Description }/>
-					<trix-editor input="description"></trix-editor>
+					<trix-editor input="description" class="prose prose-sm max-w-none"></trix-editor>
 				</div>
 			</form>
-			<div class="sticky bottom-0 text-center bg-white">
-				<button class="btn" type="submit" form="meal-delete">Delete</button>
-				<button class="btn primary" type="submit" form="meal-edit">Save</button>
+			<div class="sticky bottom-[calc(4rem+env(safe-area-inset-bottom))] -mx-4 mt-2 flex justify-between gap-2 bg-gray-50/90 px-4 py-3 backdrop-blur sm:mx-0 sm:px-0">
+				if meal.Id > 0 {
+					<button class="btn-danger" type="submit" form="meal-delete">
+						@icon("img/solid.svg#trash-can", "size-4")
+						Delete
+					</button>
+				} else {
+					<span></span>
+				}
+				<button class="btn-primary px-8" type="submit" form="meal-edit">Save</button>
 			</div>
 		</div>
 	}
+}
+
+// imageInput is a file input for an image that shows the current image and a preview of
+// the selected file (image-preview.js). Clicking the image opens the file selection.
+templ imageInput(name string, meal *meals.Meal) {
+	<label class="group relative mx-auto block size-48 cursor-pointer overflow-hidden rounded-xl ring-1 ring-gray-900/5">
+		@imagePlaceholder("size-full")
+		// covers the placeholder as soon as it has an image
+		<img src={ fileURL(meal.ImageFileId) } alt={ meal.Name } class={ "absolute inset-0 size-full object-cover", templ.KV("hidden", !meal.ImageFileId.Valid) } data-image-preview/>
+		<span class="absolute right-2 bottom-2 flex size-9 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-sm transition-colors group-hover:bg-primary group-hover:text-white">
+			@icon("img/solid.svg#camera", "size-4")
+		</span>
+		<input class="sr-only" type="file" name={ name } accept="image/png, image/jpeg"/>
+	</label>
 }
 
 func mealSaveURL(meal *meals.Meal) string {
