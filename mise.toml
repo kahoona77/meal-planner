@@ -1,6 +1,7 @@
 [tools]
 go = "1.27"
 "github:tailwindlabs/tailwindcss" = "4.3.3"
+staticcheck = "2026.2.2"
 
 [tasks.css]
 description = "Build the CSS (Tailwind)"
@@ -21,6 +22,12 @@ description = "Run the Go tests"
 depends = ["templ"]
 env = { CGO_ENABLED = "1" }
 run = "go test -mod=vendor ./..."
+
+[tasks.lint]
+description = "Run go vet and staticcheck"
+depends = ["templ"]
+env = { CGO_ENABLED = "1" }
+run = ["go vet -mod=vendor ./...", "staticcheck ./..."]
 
 [tasks."dev:css"]
 description = "Rebuild the CSS on changes"

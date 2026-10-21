@@ -3,3 +3,5 @@
 /web/static/main.css
 /web/**/*_templ.go
 /web/**/*_templ.txt
+.git
+.idea

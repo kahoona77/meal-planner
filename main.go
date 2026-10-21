@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"log/slog"
 	"meal-planner/core"
@@ -11,20 +10,23 @@ import (
 	"os"
 )
 
-//go:embed migrations/*.sql
-var embedMigrations embed.FS
-
 func main() {
-	app := core.InitApp(embedMigrations)
+	app := core.InitApp()
 	defer app.Ctx.Close()
 
+	setupRoutes(app)
+
+	if err := app.Start(fmt.Sprintf(":%s", app.Ctx.Config().Port)); err != nil {
+		slog.Error("http server stopped", "err", err)
+		os.Exit(1)
+	}
+}
+
+// setupRoutes registers the middlewares and all routes of the app.
+func setupRoutes(app *core.App) {
 	basePath := app.Ctx.Config().BasePath
 	static := web.StaticFS(app.Ctx.Config().StaticDir)
 	app.Use(web.PageMiddleware(basePath, web.NewAssets(static, basePath)))
-
-	//files.InitDb(app.Ctx)
-	//meals.InitDb(app.Ctx)
-	//planner.InitDb(app.Ctx)
 
 	root := app.Group(basePath)
 
@@ -52,9 +54,4 @@ func main() {
 	root.GET("/tags", views.Tags)
 	root.POST("/tags", views.TagSave)
 	root.POST("/tags/{id}", views.TagSave)
-
-	if err := app.Start(fmt.Sprintf(":%s", app.Ctx.Config().Port)); err != nil {
-		slog.Error("http server stopped", "err", err)
-		os.Exit(1)
-	}
 }

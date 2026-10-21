@@ -14,7 +14,7 @@ Goal: a simple, modern stack. Go stays the backend and keeps rendering HTML on t
 | 5 | Migrate templates to templ                          | ✅ Done        |
 | 6 | Embed static assets, single binary                  | ✅ Done        |
 | 7 | Add htmx where it helps                             | ✅ Done (A)    |
-| 8 | Cleanup & docs                                      | ⬜ Open        |
+| 8 | Cleanup & docs                                      | ✅ Done        |
 | 9 | Markdown descriptions instead of Trix (later)       | ⬜ Open        |
 
 Status: ⬜ Open · 🚧 In progress · ✅ Done
@@ -142,12 +142,18 @@ Stage B – later, maybe: edit and add tags inline (form posts via htmx, handler
 
 Stage C – separate feature package: "re-roll" a single day in the week view; pick the meal of a day directly in the week view.
 
-## 8. Cleanup & docs
+## 8. Cleanup & docs ✅
 
-- [ ] Handler tests with `httptest` for the main routes (in-memory SQLite)
-- [ ] Update `AGENTS.md`, `README.md` (how to run, env vars), `mise.toml` tasks
-- [ ] Check `.dockerignore`, `.gitignore`
+- [x] Linter: `go vet` + `staticcheck` (default checks; binary via mise and downloaded in the Dockerfile, not in `go.mod`), `mise run lint`, also in the Docker build so CI fails on findings. Fixed the only finding (unused constant)
+- [x] Handler tests with `httptest` for all routes (`main_test.go`: pages, 404s, base path redirect, static asset caching, create/edit/delete meal incl. image upload, tags, day select, wizard), on an in-memory SQLite
+- [x] For that: routes moved into `setupRoutes`, `core.NewApp`/`App.Handler`, migrations got their own package (`migrations.Up`), shared test helper `internal/testdb` (replaces the copies in the meals and wizard tests)
+- [x] Update `AGENTS.md`, `README.md` (what it is, Docker, configuration, development), `mise.toml` tasks
+- [x] `.dockerignore`: also `.git` and `.idea`; `.gitignore` is fine
 - [ ] Optional: release tag `v1.0.0` to test the versioned image
+
+Verified: tests stable (20 runs), Docker build from only the files git would commit runs lint and all tests, `docker run` command from the README works with an empty data directory, goose sees the existing production schema as up to date after the move of the migrations.
+
+Noticed while writing the wizard test (not changed, possible topics for the feature package): the wizard never picks meals without tags, and it fills the days in order starting on Saturday, so an unconstrained day can take the only meal that matches a later day's tags (that day then stays empty).
 
 ## 9. Markdown descriptions instead of Trix (later)
 

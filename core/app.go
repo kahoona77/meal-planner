@@ -8,13 +8,15 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"io/fs"
 	"log/slog"
+	"meal-planner/migrations"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 )
 
-func InitApp(migrationsFs fs.FS) *App {
+// InitApp creates the app from the environment: configuration, logging, database and migrations.
+func InitApp() *App {
 	conf := LoadConfiguration()
 
 	slog.SetDefault(slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
@@ -30,10 +32,15 @@ func InitApp(migrationsFs fs.FS) *App {
 		panic(err)
 	}
 
-	if err := runMigrations(db.DB, migrationsFs); err != nil {
+	if err := migrations.Up(db.DB); err != nil {
 		panic(err)
 	}
 
+	return NewApp(conf, db)
+}
+
+// NewApp creates an app without routes for an already migrated database.
+func NewApp(conf AppConfig, db *sqlx.DB) *App {
 	ctx := &Ctx{config: &conf, db: db}
 	return &App{mux: http.NewServeMux(), Ctx: ctx}
 }
@@ -49,14 +56,19 @@ func (a *App) Use(middleware func(http.Handler) http.Handler) {
 	a.middlewares = append(a.middlewares, middleware)
 }
 
-// Start listens on addr and serves all registered routes.
-func (a *App) Start(addr string) error {
+// Handler returns all registered routes wrapped in the middlewares.
+func (a *App) Handler() http.Handler {
 	var handler http.Handler = a.mux
 	for i := len(a.middlewares) - 1; i >= 0; i-- {
 		handler = a.middlewares[i](handler)
 	}
+	return logRequests(handler)
+}
+
+// Start listens on addr and serves all registered routes.
+func (a *App) Start(addr string) error {
 	slog.Info("http server started", "addr", addr)
-	return http.ListenAndServe(addr, logRequests(handler))
+	return http.ListenAndServe(addr, a.Handler())
 }
 
 func (a *App) Group(prefix string) *Group {
