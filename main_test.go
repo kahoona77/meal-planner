@@ -171,6 +171,19 @@ func TestWeekShowsNextMeal(t *testing.T) {
 	assert.NotContains(t, body, "<div>heiß</div>")
 }
 
+func TestImageLoading(t *testing.T) {
+	app := newTestApp(t)
+	app.db.MustExec(`INSERT INTO files (id, name, content_type, data) VALUES (1, 'meal.png', 'image/png', 'x')`)
+	app.db.MustExec(`UPDATE meals SET image_file_id = 1 WHERE id = 1`)
+	app.db.MustExec(`INSERT INTO meals_of_day (id, date, meal_id) VALUES ('2026_10_05', '2026-10-05', 1)`)
+
+	// images in lists load when they scroll into view, the big image of a meal right away
+	_, body := app.get(basePath + "/meals")
+	assert.Contains(t, body, `src="files/1" alt="Tomatensuppe" loading="lazy"`)
+	_, body = app.get(basePath + "/planner/2026_10_05")
+	assert.Contains(t, body, `src="files/1" alt="Tomatensuppe" loading="eager"`)
+}
+
 func TestBackLink(t *testing.T) {
 	app := newTestApp(t)
 	app.db.MustExec(`INSERT INTO meals_of_day (id, date, meal_id) VALUES (?, ?, 1)`,

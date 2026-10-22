@@ -106,11 +106,20 @@ templ icon(name string, class string) {
 	</svg>
 }
 
-// image shows an uploaded image, or a placeholder icon if there is none. class sets the
-// size (and e.g. the rounding) of both.
+// image shows an uploaded image, or a placeholder icon if there is none.
+// class sets the size (and e.g. the rounding) of both.
 templ image(fileId sql.NullInt64, alt string, class string) {
+	@imageWithLoading(fileId, alt, class, "lazy")
+}
+
+// heroImage is an image that is visible right away (e.g. the big image of a meal);
+templ heroImage(fileId sql.NullInt64, alt string, class string) {
+	@imageWithLoading(fileId, alt, class, "eager")
+}
+
+templ imageWithLoading(fileId sql.NullInt64, alt string, class string, loading string) {
 	if fileId.Valid {
-		<img src={ fileURL(fileId) } alt={ alt } class={ "object-cover", class }/>
+		<img src={ fileURL(fileId) } alt={ alt } loading={ loading } decoding="async" class={ "object-cover", class }/>
 	} else {
 		@imagePlaceholder(class)
 	}

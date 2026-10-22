@@ -83,7 +83,7 @@ templ mealOfDayPage(mod *planner.MealOfTheDay, tags []*meals.MealTag) {
 	@layout(withBack(weekURL(mod.Date))) {
 		<article class="card mx-auto max-w-2xl overflow-hidden">
 			if mod.Meal.ImageFileId.Valid {
-				@image(mod.Meal.ImageFileId, mod.Meal.Name, "aspect-[16/10] w-full")
+				@heroImage(mod.Meal.ImageFileId, mod.Meal.Name, "aspect-[16/10] w-full")
 			} else {
 				@imagePlaceholder("h-32 w-full")
 			}
@@ -100,7 +100,7 @@ templ featuredMeal(mod *planner.MealOfTheDay, tags []*meals.MealTag) {
 	<article class="card mt-6 hidden gap-6 p-6 lg:grid lg:grid-cols-[18rem_1fr] print:hidden">
 		// stays in view while scrolling through a long description
 		<a href={ templ.SafeURL("planner/" + mod.Id) } class="sticky top-18 self-start overflow-hidden rounded-lg">
-			@image(mod.Meal.ImageFileId, mod.Meal.Name, "aspect-square w-full")
+			@heroImage(mod.Meal.ImageFileId, mod.Meal.Name, "aspect-square w-full")
 		</a>
 		<div class="min-w-0">
 			if isToday(mod.Date) {
