@@ -24,7 +24,7 @@ templ mealsPage(mealsWithTags []*MealWithTags) {
 				</a>
 			}
 		</div>
-		@fab("meals/new", "img/solid.svg#plus", "New meal")
+		@fab("meals/new", "img/solid.svg#plus", "Neues Gericht")
 	}
 }
 
@@ -54,12 +54,12 @@ templ mealEditPage(meal *meals.Meal, tagSelect TagSelect) {
 				if meal.Id > 0 {
 					<button class="btn-danger" type="submit" form="meal-delete">
 						@icon("img/solid.svg#trash-can", "size-4")
-						Delete
+						Löschen
 					</button>
 				} else {
 					<span></span>
 				}
-				<button class="btn-primary px-8" type="submit" form="meal-edit">Save</button>
+				<button class="btn-primary px-8" type="submit" form="meal-edit">Speichern</button>
 			</div>
 		</div>
 	}

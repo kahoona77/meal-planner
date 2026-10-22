@@ -121,16 +121,16 @@ func TestPages(t *testing.T) {
 		path     string
 		contains string
 	}{
-		{"/", "Create new"},
+		{"/", "Woche planen"},
 		{"/", `href="planner/` + time.Now().Format(planner.MealOfDayDateFormat) + `/select"`}, // nothing planned yet
-		{"/offset/-1", "Create new"},
+		{"/offset/-1", "Woche planen"},
 		{"/planner/2026_10_05", "<div>heiß</div>"},
 		{"/planner/2026_10_05/select", `value="1" checked`},
 		{"/meals", "Tomatensuppe"},
 		{"/meals/new", `action="meals"`},
 		{"/meals/1", `value="Tomatensuppe"`},
 		{"/tags", "Nudeln"},
-		{"/wizard/0", "Generate"},
+		{"/wizard/0", "Plan erstellen"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.path, func(t *testing.T) {
@@ -187,13 +187,13 @@ func TestBackLink(t *testing.T) {
 	}
 	for path, back := range tests {
 		_, body := app.get(basePath + path)
-		assert.Contains(t, body, `<a href="`+back+`" aria-label="Back"`, path)
+		assert.Contains(t, body, `<a href="`+back+`" aria-label="Zurück"`, path)
 	}
 
 	// pages of the bottom navigation have no back link
 	for _, path := range []string{"/", "/meals", "/tags"} {
 		_, body := app.get(basePath + path)
-		assert.NotContains(t, body, `aria-label="Back"`, path)
+		assert.NotContains(t, body, `aria-label="Zurück"`, path)
 	}
 }
 

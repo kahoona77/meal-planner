@@ -30,7 +30,7 @@ func newLayoutOptions(options []layoutOption) layoutOptions {
 templ layout(options ...layoutOption) {
 	{{ opts := newLayoutOptions(options) }}
 	<!DOCTYPE html>
-	<html lang="en">
+	<html lang="de">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -58,7 +58,7 @@ templ layout(options ...layoutOption) {
 			<header class="sticky top-0 z-40 bg-primary text-white shadow-sm print:hidden">
 				<div class="mx-auto flex h-12 max-w-6xl items-center gap-2 px-4">
 					if opts.back != "" {
-						<a href={ templ.SafeURL(opts.back) } aria-label="Back" class="-ml-2 flex size-9 items-center justify-center rounded-full transition-colors hover:bg-white/15">
+						<a href={ templ.SafeURL(opts.back) } aria-label="Zurück" class="-ml-2 flex size-9 items-center justify-center rounded-full transition-colors hover:bg-white/15">
 							@icon("img/solid.svg#chevron-left", "size-5")
 						</a>
 					}
@@ -71,8 +71,8 @@ templ layout(options ...layoutOption) {
 			</main>
 			<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur print:hidden">
 				<div class="mx-auto grid h-16 max-w-md grid-cols-3">
-					@navLink("", "img/regular.svg#calendar-days", "Planner")
-					@navLink("meals", "img/solid.svg#burger", "Meals")
+					@navLink("", "img/regular.svg#calendar-days", "Woche")
+					@navLink("meals", "img/solid.svg#burger", "Gerichte")
 					@navLink("tags", "img/solid.svg#tags", "Tags")
 				</div>
 			</nav>

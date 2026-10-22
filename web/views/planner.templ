@@ -9,7 +9,7 @@ import (
 templ weekPage(week planner.Week, featured *planner.MealOfTheDay, featuredTags []*meals.MealTag) {
 	@layout() {
 		<div class="mb-4 flex items-center justify-between gap-2">
-			<a class="btn-icon print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset-1)) } aria-label="Previous week">
+			<a class="btn-icon print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset-1)) } aria-label="Vorherige Woche">
 				@icon("img/solid.svg#chevron-left", "size-5")
 			</a>
 			<div class="text-center">
@@ -18,7 +18,7 @@ templ weekPage(week planner.Week, featured *planner.MealOfTheDay, featuredTags [
 					{ week.Start.Format(dateFormat) } – { week.End.Format(dateFormat) }
 				</div>
 			</div>
-			<a class="btn-icon print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset+1)) } aria-label="Next week">
+			<a class="btn-icon print:hidden" href={ templ.SafeURL("offset/" + strconv.Itoa(week.Offset+1)) } aria-label="Nächste Woche">
 				@icon("img/solid.svg#chevron-right", "size-5")
 			</a>
 		</div>
@@ -34,7 +34,7 @@ templ weekPage(week planner.Week, featured *planner.MealOfTheDay, featuredTags [
 		<div class="mt-6 text-center print:hidden">
 			<a href={ templ.SafeURL("wizard/" + strconv.Itoa(week.Offset)) } class="btn-primary px-6 py-3">
 				@icon("img/solid.svg#wand-magic-sparkles", "size-4")
-				Create new
+				Woche planen
 			</a>
 		</div>
 	}
