@@ -326,6 +326,36 @@ func TestSelectMealOfDay(t *testing.T) {
 	assert.Equal(t, 1, app.count(`SELECT count(*) FROM meals_of_day WHERE id = '2026_10_05' AND meal_id IS NULL`))
 }
 
+func TestRerollMealOfDay(t *testing.T) {
+	app := newTestApp(t)
+	today := time.Now().Format(planner.MealOfDayDateFormat)
+	app.db.MustExec(`INSERT INTO meals_of_day (id, date, meal_id) VALUES (?, ?, 1)`, today, time.Now().Format(time.DateOnly))
+
+	_, body := app.get(basePath + "/")
+	assert.Contains(t, body, `action="planner/`+today+`/reroll"`)
+
+	res := app.postForm(basePath+"/planner/"+today+"/reroll", nil)
+	assertRedirect(t, res, basePath+"/")
+	// another meal with tags (the wizard only picks those)
+	var mealId int64
+	require.NoError(t, app.db.Get(&mealId, `SELECT meal_id FROM meals_of_day WHERE id = ?`, today))
+	assert.Contains(t, []int64{2, 3}, mealId)
+
+	// past weeks redirect back to them
+	app.db.MustExec(`INSERT INTO meals_of_day (id, date, meal_id) VALUES ('2026_10_05', '2026-10-05', 1)`)
+	res = app.postForm(basePath+"/planner/2026_10_05/reroll", nil)
+	assert.Equal(t, http.StatusFound, res.StatusCode)
+	assert.True(t, strings.HasPrefix(res.Header.Get("Location"), basePath+"/offset/-"), res.Header.Get("Location"))
+
+	// a day without a meal gets one
+	res = app.postForm(basePath+"/planner/2026_10_06/reroll", nil)
+	assert.Equal(t, http.StatusFound, res.StatusCode)
+	assert.Equal(t, 1, app.count(`SELECT count(*) FROM meals_of_day WHERE id = '2026_10_06' AND meal_id IS NOT NULL`))
+
+	res = app.postForm(basePath+"/planner/someday/reroll", nil)
+	assert.Equal(t, http.StatusNotFound, res.StatusCode)
+}
+
 func TestWizard(t *testing.T) {
 	app := newTestApp(t)
 

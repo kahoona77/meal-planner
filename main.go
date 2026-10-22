@@ -43,6 +43,7 @@ func setupRoutes(app *core.App) {
 	root.GET("/planner/{id}", views.MealOfDay)
 	root.GET("/planner/{id}/select", views.SelectMealOfDayView)
 	root.POST("/planner/{id}/select", views.SelectMealOfDay)
+	root.POST("/planner/{id}/reroll", views.RerollMealOfDay)
 
 	root.GET("/meals", views.Meals)
 	root.POST("/meals", views.MealSave)

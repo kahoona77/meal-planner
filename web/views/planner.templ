@@ -40,43 +40,50 @@ templ weekPage(week planner.Week, featured *planner.MealOfTheDay, featuredTags [
 	}
 }
 
-// weekDay is the card of one day of the week; a day without a meal links to the selection
-// directly and is drawn with a dashed border.
+// weekDay is the card of one day of the week
 templ weekDay(mod *planner.MealOfTheDay) {
 	{{ empty := mod.Meal.Id == 0 }}
 	{{ today := isToday(mod.Date) }}
-	<a
-		if empty {
-			href={ templ.SafeURL("planner/" + mod.Id + "/select") }
-		} else {
-			href={ templ.SafeURL("planner/" + mod.Id) }
-		}
-		class={ "group flex items-center gap-3 overflow-hidden rounded-xl p-2 transition lg:flex-col lg:items-stretch lg:gap-0 lg:p-0",
+	// the reroll form can't be inside the link, so it is placed above it
+	<div class="relative">
+		<a
+			if empty {
+				href={ templ.SafeURL("planner/" + mod.Id + "/select") }
+			} else {
+				href={ templ.SafeURL("planner/" + mod.Id) }
+			}
+			class={ "group flex h-full items-center gap-3 overflow-hidden rounded-xl p-2 transition lg:flex-col lg:items-stretch lg:gap-0 lg:p-0",
 			templ.KV("card hover:shadow-md", !empty), templ.KV("ring-2 ring-primary", !empty && today),
 			templ.KV("border-2 border-dashed hover:border-primary hover:bg-primary-50", empty), templ.KV("border-gray-300", empty && !today), templ.KV("border-primary", empty && today) }
-	>
-		<div class={ "hidden py-2 text-center lg:block", templ.KV("bg-primary text-white", today), templ.KV("text-gray-500", !today) }>
-			<div class="text-xs font-semibold tracking-wider uppercase">{ weekdayShort(mod.Date.Weekday()) }</div>
-			<div class={ "text-2xl leading-tight font-bold", templ.KV("text-gray-900", !today && !empty), templ.KV("text-gray-400", !today && empty) }>{ mod.Date.Format("2.") }</div>
-		</div>
-		if empty {
-			<div class="flex size-20 shrink-0 items-center justify-center rounded-lg text-gray-300 transition-colors group-hover:text-primary sm:size-24 lg:aspect-square lg:h-auto lg:w-full">
-				@icon("img/solid.svg#plus", "size-8")
+		>
+			<div class={ "hidden py-2 text-center lg:block", templ.KV("bg-primary text-white", today), templ.KV("text-gray-500", !today) }>
+				<div class="text-xs font-semibold tracking-wider uppercase">{ weekdayShort(mod.Date.Weekday()) }</div>
+				<div class={ "text-2xl leading-tight font-bold", templ.KV("text-gray-900", !today && !empty), templ.KV("text-gray-400", !today && empty) }>{ mod.Date.Format("2.") }</div>
 			</div>
-		} else {
-			@image(mod.Meal.ImageFileId, mod.Meal.Name, "size-20 shrink-0 rounded-lg sm:size-24 lg:aspect-square lg:h-auto lg:w-full lg:rounded-none")
-		}
-		<div class="min-w-0 flex-1 lg:p-2.5">
-			<p class={ "text-sm lg:hidden", templ.KV("font-semibold text-primary", today), templ.KV("text-gray-500", !today) }>
-				{ weekdayName(mod.Date.Weekday()) }, { mod.Date.Format(dateFormat) }
-			</p>
 			if empty {
-				<p class="mt-0.5 text-gray-400 group-hover:text-primary lg:mt-0 lg:text-center lg:text-sm">Essen planen</p>
+				<div class="flex size-20 shrink-0 items-center justify-center rounded-lg text-gray-300 transition-colors group-hover:text-primary sm:size-24 lg:aspect-square lg:h-auto lg:w-full">
+					@icon("img/solid.svg#plus", "size-8")
+				</div>
 			} else {
-				<p class="mt-0.5 line-clamp-2 font-semibold text-gray-900 lg:mt-0 lg:line-clamp-3 lg:text-sm">{ mod.Meal.Name }</p>
+				@image(mod.Meal.ImageFileId, mod.Meal.Name, "size-20 shrink-0 rounded-lg sm:size-24 lg:aspect-square lg:h-auto lg:w-full lg:rounded-none")
 			}
-		</div>
-	</a>
+			<div class="min-w-0 flex-1 pr-10 lg:p-2.5">
+				<p class={ "text-sm lg:hidden", templ.KV("font-semibold text-primary", today), templ.KV("text-gray-500", !today) }>
+					{ weekdayName(mod.Date.Weekday()) }, { mod.Date.Format(dateFormat) }
+				</p>
+				if empty {
+					<p class="mt-0.5 text-gray-400 group-hover:text-primary lg:mt-0 lg:text-center lg:text-sm">Essen planen</p>
+				} else {
+					<p class="mt-0.5 line-clamp-2 font-semibold text-gray-900 lg:mt-0 lg:line-clamp-3 lg:text-sm">{ mod.Meal.Name }</p>
+				}
+			</div>
+		</a>
+		<form action={ templ.SafeURL("planner/" + mod.Id + "/reroll") } method="post" class="absolute top-1/2 right-2 -translate-y-1/2 lg:top-1.5 lg:right-1.5 lg:translate-y-0 print:hidden">
+			<button type="submit" aria-label={ rerollLabel(empty) } title={ rerollLabel(empty) } class="flex size-9 items-center justify-center rounded-full bg-white/90 text-gray-500 shadow-sm ring-1 ring-gray-900/5 transition-colors hover:text-primary">
+				@icon("img/solid.svg#dice", "size-4")
+			</button>
+		</form>
+	</div>
 }
 
 templ mealOfDayPage(mod *planner.MealOfTheDay, tags []*meals.MealTag) {
@@ -186,4 +193,11 @@ templ mealOption(id string, value string, checked bool) {
 			@icon("img/solid.svg#circle-check", "size-5")
 		</span>
 	</label>
+}
+
+func rerollLabel(empty bool) string {
+	if empty {
+		return "Gericht würfeln"
+	}
+	return "Anderes Gericht würfeln"
 }
