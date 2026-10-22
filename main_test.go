@@ -171,6 +171,32 @@ func TestWeekShowsNextMeal(t *testing.T) {
 	assert.NotContains(t, body, "<div>heiß</div>")
 }
 
+func TestBackLink(t *testing.T) {
+	app := newTestApp(t)
+	app.db.MustExec(`INSERT INTO meals_of_day (id, date, meal_id) VALUES (?, ?, 1)`,
+		time.Now().Format(planner.MealOfDayDateFormat), time.Now().Format(time.DateOnly))
+	today := time.Now().Format(planner.MealOfDayDateFormat)
+
+	tests := map[string]string{
+		"/planner/" + today:             "./",
+		"/planner/" + today + "/select": "planner/" + today,
+		"/meals/1":                      "meals",
+		"/meals/new":                    "meals",
+		"/wizard/0":                     "./",
+		"/wizard/2":                     "offset/2",
+	}
+	for path, back := range tests {
+		_, body := app.get(basePath + path)
+		assert.Contains(t, body, `<a href="`+back+`" aria-label="Back"`, path)
+	}
+
+	// pages of the bottom navigation have no back link
+	for _, path := range []string{"/", "/meals", "/tags"} {
+		_, body := app.get(basePath + path)
+		assert.NotContains(t, body, `aria-label="Back"`, path)
+	}
+}
+
 func TestActiveNavLink(t *testing.T) {
 	app := newTestApp(t)
 

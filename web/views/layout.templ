@@ -6,8 +6,29 @@ import (
 	"meal-planner/web"
 )
 
-// layout is the frame of every page.
-templ layout() {
+// layoutOptions are the page specific settings of layout, set with layoutOption functions.
+type layoutOptions struct {
+	back string
+}
+
+type layoutOption func(*layoutOptions)
+
+// withBack shows a back arrow to url in the header
+func withBack(url string) layoutOption {
+	return func(o *layoutOptions) { o.back = url }
+}
+
+func newLayoutOptions(options []layoutOption) layoutOptions {
+	opts := layoutOptions{}
+	for _, option := range options {
+		option(&opts)
+	}
+	return opts
+}
+
+// layout is the frame of every page, e.g. @layout() or @layout(withBack("meals")).
+templ layout(options ...layoutOption) {
+	{{ opts := newLayoutOptions(options) }}
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -36,6 +57,11 @@ templ layout() {
 		<body class="min-h-dvh bg-gray-50 text-gray-800 antialiased" hx-boost:inherited="true">
 			<header class="sticky top-0 z-40 bg-primary text-white shadow-sm print:hidden">
 				<div class="mx-auto flex h-12 max-w-6xl items-center gap-2 px-4">
+					if opts.back != "" {
+						<a href={ templ.SafeURL(opts.back) } aria-label="Back" class="-ml-2 flex size-9 items-center justify-center rounded-full transition-colors hover:bg-white/15">
+							@icon("img/solid.svg#chevron-left", "size-5")
+						</a>
+					}
 					<img src={ web.Asset(ctx, "img/chef.svg") } alt="" class="size-6 brightness-0 invert"/>
 					<span class="font-semibold tracking-wide">Meal Planner</span>
 				</div>

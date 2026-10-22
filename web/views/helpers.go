@@ -3,6 +3,8 @@ package views
 import (
 	"database/sql"
 	"fmt"
+	"math"
+	"meal-planner/planner"
 	"regexp"
 	"strings"
 	"time"
@@ -22,6 +24,30 @@ func weekdayShort(weekday time.Weekday) string {
 }
 
 const dateFormat = "02.01.2006"
+
+// weekOffsetURL returns the URL of the week with the given offset from the current one.
+// The current week is "./" (the start page) and not "", which is no URL for layout.
+func weekOffsetURL(offset int) string {
+	if offset == 0 {
+		return "./"
+	}
+	return fmt.Sprintf("offset/%d", offset)
+}
+
+// weekURL returns the URL of the week containing date.
+func weekURL(date time.Time) string {
+	weeks := planner.GetStartWeek(date).Sub(planner.GetStartWeek(time.Now())).Hours() / (24 * 7)
+	return weekOffsetURL(int(math.Round(weeks)))
+}
+
+// selectBackURL is where the back arrow of the meal selection leads: the meal of the day,
+// or the week if nothing is planned (empty days link to the selection directly).
+func selectBackURL(mod *planner.MealOfTheDay) string {
+	if !mod.MealId.Valid {
+		return weekURL(mod.Date)
+	}
+	return "planner/" + mod.Id
+}
 
 // isToday reports whether t is on the current day.
 func isToday(t time.Time) bool {

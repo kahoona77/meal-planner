@@ -12,7 +12,7 @@ type wizardDay struct {
 }
 
 templ wizardPage(offset int, start time.Time, end time.Time, days []wizardDay) {
-	@layout() {
+	@layout(withBack(weekOffsetURL(offset))) {
 		<form class="mx-auto max-w-3xl" action={ templ.SafeURL("wizard/" + strconv.Itoa(offset)) } method="post">
 			<div class="mb-4 text-center">
 				<div class="text-xs font-semibold tracking-wider text-primary uppercase">KW { strconv.Itoa(isoWeek(start)) }</div>

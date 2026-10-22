@@ -80,7 +80,7 @@ templ weekDay(mod *planner.MealOfTheDay) {
 }
 
 templ mealOfDayPage(mod *planner.MealOfTheDay, tags []*meals.MealTag) {
-	@layout() {
+	@layout(withBack(weekURL(mod.Date))) {
 		<article class="card mx-auto max-w-2xl overflow-hidden">
 			if mod.Meal.ImageFileId.Valid {
 				@image(mod.Meal.ImageFileId, mod.Meal.Name, "aspect-[16/10] w-full")
@@ -150,7 +150,7 @@ templ mealOfDayDetails(mod *planner.MealOfTheDay, tags []*meals.MealTag, label s
 }
 
 templ selectMealOfDayPage(mod *planner.MealOfTheDay, allMeals []*meals.Meal) {
-	@layout() {
+	@layout(withBack(selectBackURL(mod))) {
 		<form id="meal-select" class="mx-auto max-w-3xl" action={ templ.SafeURL("planner/" + mod.Id + "/select") } method="post">
 			<h1 class="mb-3 text-lg font-semibold text-gray-900">
 				Essen für { weekdayName(mod.Date.Weekday()) }, { mod.Date.Format(dateFormat) }

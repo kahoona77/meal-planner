@@ -29,7 +29,7 @@ templ mealsPage(mealsWithTags []*MealWithTags) {
 }
 
 templ mealEditPage(meal *meals.Meal, tagSelect TagSelect) {
-	@layout() {
+	@layout(withBack("meals")) {
 		<div class="mx-auto max-w-2xl">
 			if meal.Id > 0 {
 				<form id="meal-delete" action={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10) + "/delete") } method="post" hidden hx-confirm="Wirklich löschen?"></form>
