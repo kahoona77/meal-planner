@@ -210,6 +210,20 @@ func TestBackLink(t *testing.T) {
 	}
 }
 
+func TestMealFilter(t *testing.T) {
+	app := newTestApp(t)
+
+	// the meals carry name and tags for filter.js, the tags are offered as filter
+	_, body := app.get(basePath + "/meals")
+	assert.Contains(t, body, `data-filter-item data-name="Tomatensuppe" data-tags="1"`)
+	assert.Contains(t, body, `data-filter-item data-name="Burger" data-tags=""`)
+	assert.Contains(t, body, `<input type="checkbox" name="tags" value="2">`)
+
+	_, body = app.get(basePath + "/planner/2026_10_05/select")
+	assert.Contains(t, body, `data-filter-item data-name="Spaghetti"`)
+	assert.Contains(t, body, `data-filter-search`)
+}
+
 func TestActiveNavLink(t *testing.T) {
 	app := newTestApp(t)
 

@@ -158,35 +158,42 @@ templ mealOfDayDetails(mod *planner.MealOfTheDay, tags []*meals.MealTag, label s
 
 templ selectMealOfDayPage(mod *planner.MealOfTheDay, allMeals []*meals.Meal) {
 	@layout(withBack(selectBackURL(mod))) {
-		<form id="meal-select" class="mx-auto max-w-3xl" action={ templ.SafeURL("planner/" + mod.Id + "/select") } method="post">
+		// the search field is outside of the form, so Enter doesn't submit it
+		<div data-filter class="mx-auto max-w-3xl">
 			<h1 class="mb-3 text-lg font-semibold text-gray-900">
 				Essen für { weekdayName(mod.Date.Weekday()) }, { mod.Date.Format(dateFormat) }
 			</h1>
-			<div class="grid gap-2 sm:grid-cols-2">
-				@mealOption("none", "", !mod.MealId.Valid) {
-					<div class="flex size-14 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
-						@icon("img/solid.svg#ban", "size-5")
-					</div>
-					<span class="flex-1 text-gray-500">- leer -</span>
-				}
-				for _, meal := range allMeals {
-					@mealOption(strconv.FormatInt(meal.Id, 10), strconv.FormatInt(meal.Id, 10), meal.Id == mod.MealId.Int64) {
-						@image(meal.ImageFileId, meal.Name, "size-14 shrink-0 rounded-lg")
-						<span class="min-w-0 flex-1 font-medium text-gray-900">{ meal.Name }</span>
+			<div class="mb-3">
+				@filterSearch("Gericht suchen")
+			</div>
+			<form id="meal-select" action={ templ.SafeURL("planner/" + mod.Id + "/select") } method="post">
+				<div class="grid gap-2 sm:grid-cols-2">
+					@mealOption("none", "", !mod.MealId.Valid, nil) {
+						<div class="flex size-14 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+							@icon("img/solid.svg#ban", "size-5")
+						</div>
+						<span class="flex-1 text-gray-500">- leer -</span>
 					}
-				}
-			</div>
-			<div class="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] mt-4 flex justify-center">
-				<button class="btn-primary w-full py-3 shadow-lg sm:w-auto sm:px-10" type="submit">Speichern</button>
-			</div>
-		</form>
+					for _, meal := range allMeals {
+						@mealOption(strconv.FormatInt(meal.Id, 10), strconv.FormatInt(meal.Id, 10), meal.Id == mod.MealId.Int64, templ.Attributes{"data-filter-item": true, "data-name": meal.Name}) {
+							@image(meal.ImageFileId, meal.Name, "size-14 shrink-0 rounded-lg")
+							<span class="min-w-0 flex-1 font-medium text-gray-900">{ meal.Name }</span>
+						}
+					}
+				</div>
+				@filterEmpty()
+				<div class="sticky bottom-[calc(5rem+env(safe-area-inset-bottom))] mt-4 flex justify-center">
+					<button class="btn-primary w-full py-3 shadow-lg sm:w-auto sm:px-10" type="submit">Speichern</button>
+				</div>
+			</form>
+		</div>
 	}
 }
 
 // mealOption is one selectable row of the meal of the day selection; the whole row is the
-// label of a visually hidden radio button.
-templ mealOption(id string, value string, checked bool) {
-	<label class="card group flex cursor-pointer items-center gap-3 p-2 has-checked:bg-primary-50 has-checked:ring-2 has-checked:ring-primary has-focus-visible:ring-2 has-focus-visible:ring-primary/40">
+// label of a visually hidden radio button. attrs are added to the row (e.g. for filter.js).
+templ mealOption(id string, value string, checked bool, attrs templ.Attributes) {
+	<label { attrs... } class="card group flex cursor-pointer items-center gap-3 p-2 has-checked:bg-primary-50 has-checked:ring-2 has-checked:ring-primary has-focus-visible:ring-2 has-focus-visible:ring-primary/40">
 		<input class="sr-only" type="radio" id={ id } name="selected" value={ value } checked?={ checked }/>
 		{ children... }
 		<span class="invisible mr-1 text-primary group-has-checked:visible">

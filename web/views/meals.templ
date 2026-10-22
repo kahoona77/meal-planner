@@ -3,26 +3,36 @@ package views
 import (
 	"meal-planner/meals"
 	"strconv"
+	"strings"
 )
 
-templ mealsPage(mealsWithTags []*MealWithTags) {
+templ mealsPage(mealsWithTags []*MealWithTags, tagFilter TagSelect) {
 	@layout() {
-		<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-			for _, meal := range mealsWithTags {
-				<a href={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10)) } class="card overflow-hidden transition-shadow hover:shadow-md">
-					@image(meal.ImageFileId, meal.Name, "aspect-[4/3] w-full")
-					<div class="p-2.5">
-						<h2 class="truncate font-semibold text-gray-900">{ meal.Name }</h2>
-						if len(meal.Tags) > 0 {
-							<div class="mt-1.5 flex flex-wrap gap-1">
-								for _, tag := range meal.Tags {
-									@tagChip(tag.Tag)
-								}
-							</div>
-						}
-					</div>
-				</a>
-			}
+		<div data-filter>
+			<div class="mb-4 space-y-3">
+				@filterSearch("Gericht suchen")
+				<div data-filter-tags>
+					@tagSelectInput(tagFilter)
+				</div>
+			</div>
+			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+				for _, meal := range mealsWithTags {
+					<a href={ templ.SafeURL("meals/" + strconv.FormatInt(meal.Id, 10)) } data-filter-item data-name={ meal.Name } data-tags={ mealTagIds(meal.Tags) } class="card overflow-hidden transition-shadow hover:shadow-md">
+						@image(meal.ImageFileId, meal.Name, "aspect-[4/3] w-full")
+						<div class="p-2.5">
+							<h2 class="truncate font-semibold text-gray-900">{ meal.Name }</h2>
+							if len(meal.Tags) > 0 {
+								<div class="mt-1.5 flex flex-wrap gap-1">
+									for _, tag := range meal.Tags {
+										@tagChip(tag.Tag)
+									}
+								</div>
+							}
+						</div>
+					</a>
+				}
+			</div>
+			@filterEmpty()
 		</div>
 		@fab("meals/new", "img/solid.svg#plus", "Neues Gericht")
 	}
@@ -77,6 +87,15 @@ templ imageInput(name string, meal *meals.Meal) {
 		</span>
 		<input class="sr-only" type="file" name={ name } accept="image/png, image/jpeg"/>
 	</label>
+}
+
+// mealTagIds returns the ids of the tags separated by spaces, for filter.js.
+func mealTagIds(tags []*meals.MealTag) string {
+	ids := make([]string, len(tags))
+	for i, tag := range tags {
+		ids[i] = strconv.FormatInt(tag.Id, 10)
+	}
+	return strings.Join(ids, " ")
 }
 
 func mealSaveURL(meal *meals.Meal) string {

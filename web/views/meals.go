@@ -30,7 +30,12 @@ func Meals(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.Render(http.StatusOK, mealsPage(mealsWithTags))
+	tags, err := repo.GetTags()
+	if err != nil {
+		return err
+	}
+
+	return ctx.Render(http.StatusOK, mealsPage(mealsWithTags, newTagSelect("tags", tags, nil)))
 }
 
 func MealEdit(ctx *core.WebContext) error {

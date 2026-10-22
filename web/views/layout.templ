@@ -52,6 +52,7 @@ templ layout(options ...layoutOption) {
 			<script type="text/javascript" src={ web.Asset(ctx, "trix.js") }></script>
 			<script src={ web.Asset(ctx, "image-preview.js") } defer></script>
 			<script src={ web.Asset(ctx, "toggle.js") } defer></script>
+			<script src={ web.Asset(ctx, "filter.js") } defer></script>
 		</head>
 		// links and forms load the next page in the background and only swap the <body>
 		<body class="min-h-dvh bg-gray-50 text-gray-800 antialiased" hx-boost:inherited="true">
@@ -134,6 +135,20 @@ templ imagePlaceholder(class string) {
 // tagChip shows the name of a tag in its color.
 templ tagChip(tag meals.Tag) {
 	<span class="chip" style={ colorStyle("--tag-color", tag.Color) }>{ tag.Name }</span>
+}
+
+// filterSearch is the search field of a list filtered by filter.js (see there for the data
+// attributes of the list).
+templ filterSearch(label string) {
+	<div class="relative">
+		@icon("img/solid.svg#magnifying-glass", "pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400")
+		<input type="search" data-filter-search placeholder={ label } aria-label={ label } autocomplete="off" class="pl-9"/>
+	</div>
+}
+
+// filterEmpty is shown by filter.js if no item of the list matches.
+templ filterEmpty() {
+	<p data-filter-empty hidden class="py-10 text-center text-gray-500">Keine Gerichte gefunden</p>
 }
 
 // fab is the floating action button above the bottom navigation.
