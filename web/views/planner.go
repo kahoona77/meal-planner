@@ -23,7 +23,28 @@ func renderWeek(ctx *core.WebContext, offset int) error {
 		return err
 	}
 
-	return ctx.RenderTemplate(http.StatusOK, "index.html", core.TemplateData{"week": &week})
+	featured := nextPlannedMeal(week, time.Now())
+	var featuredTags []*meals.MealTag
+	if featured != nil {
+		featuredTags, err = meals.NewRepository(ctx).GetMealTags(featured.Meal.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return ctx.Render(http.StatusOK, weekPage(week, featured, featuredTags))
+}
+
+// nextPlannedMeal returns the meal of the week for now or the next day that has one, or
+// nil if there is none.
+func nextPlannedMeal(week planner.Week, now time.Time) *planner.MealOfTheDay {
+	today := now.Format(time.DateOnly)
+	for _, mod := range week.Meals {
+		if mod.Meal.Id > 0 && mod.Date.Format(time.DateOnly) >= today {
+			return mod
+		}
+	}
+	return nil
 }
 
 func getWeek(ctx core.Context, offset int) (planner.Week, error) {

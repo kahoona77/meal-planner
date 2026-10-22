@@ -1,0 +1,159 @@
+package views
+
+import (
+	"database/sql"
+	"meal-planner/meals"
+	"meal-planner/web"
+)
+
+// layoutOptions are the page specific settings of layout, set with layoutOption functions.
+type layoutOptions struct {
+	back string
+}
+
+type layoutOption func(*layoutOptions)
+
+// withBack shows a back arrow to url in the header
+func withBack(url string) layoutOption {
+	return func(o *layoutOptions) { o.back = url }
+}
+
+func newLayoutOptions(options []layoutOption) layoutOptions {
+	opts := layoutOptions{}
+	for _, option := range options {
+		option(&opts)
+	}
+	return opts
+}
+
+// layout is the frame of every page, e.g. @layout() or @layout(withBack("meals")).
+templ layout(options ...layoutOption) {
+	{{ opts := newLayoutOptions(options) }}
+	<!DOCTYPE html>
+	<html lang="de">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<base href={ web.BasePath(ctx) }/>
+			<title>Meal-Planner</title>
+			<link rel="apple-touch-icon" sizes="180x180" href={ web.Asset(ctx, "img/apple-touch-icon.png") }/>
+			<link rel="icon" type="image/png" sizes="32x32" href={ web.Asset(ctx, "img/favicon-32x32.png") }/>
+			<link rel="icon" type="image/png" sizes="16x16" href={ web.Asset(ctx, "img/favicon-16x16.png") }/>
+			<link rel="manifest" href={ web.Asset(ctx, "manifest.json") }/>
+			<link rel="mask-icon" href={ web.Asset(ctx, "img/safari-pinned-tab.svg") } color="#5bbad5"/>
+			<meta name="msapplication-TileColor" content="#da532c"/>
+			<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+			<meta name="theme-color" content="#086699"/>
+			<link rel="stylesheet" href={ web.Asset(ctx, "main.css") }/>
+			// All scripts are loaded on every page: boosted navigation only swaps the <body>,
+			// scripts in the <head> of the next page would not be loaded.
+			<script src={ web.Asset(ctx, "htmx.min.js") }></script>
+			<script type="text/javascript" src={ web.Asset(ctx, "trix.js") }></script>
+			<script src={ web.Asset(ctx, "image-preview.js") } defer></script>
+			<script src={ web.Asset(ctx, "toggle.js") } defer></script>
+			<script src={ web.Asset(ctx, "filter.js") } defer></script>
+		</head>
+		// links and forms load the next page in the background and only swap the <body>
+		<body class="min-h-dvh bg-gray-50 text-gray-800 antialiased" hx-boost:inherited="true">
+			<header class="sticky top-0 z-40 bg-primary text-white shadow-sm print:hidden">
+				<div class="mx-auto flex h-12 max-w-6xl items-center gap-2 px-4">
+					if opts.back != "" {
+						<a href={ templ.SafeURL(opts.back) } aria-label="Zurück" class="-ml-2 flex size-9 items-center justify-center rounded-full transition-colors hover:bg-white/15">
+							@icon("img/solid.svg#chevron-left", "size-5")
+						</a>
+					}
+					<img src={ web.Asset(ctx, "img/chef.svg") } alt="" class="size-6 brightness-0 invert"/>
+					<span class="font-semibold tracking-wide">Meal Planner</span>
+				</div>
+			</header>
+			<main class="mx-auto max-w-6xl px-4 pt-4 pb-28 print:p-0">
+				{ children... }
+			</main>
+			<nav class="fixed inset-x-0 bottom-0 z-40 border-t border-gray-200 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur print:hidden">
+				<div class="mx-auto grid h-16 max-w-md grid-cols-3">
+					@navLink("", "img/regular.svg#calendar-days", "Woche")
+					@navLink("meals", "img/solid.svg#burger", "Gerichte")
+					@navLink("tags", "img/solid.svg#tags", "Tags")
+				</div>
+			</nav>
+		</body>
+	</html>
+}
+
+templ navLink(href string, iconName string, label string) {
+	if navSection(web.Path(ctx)) == href {
+		<a href={ templ.SafeURL(href) } aria-current="page" class="flex flex-col items-center justify-center gap-1 text-xs font-semibold text-primary">
+			<span class="flex h-7 w-14 items-center justify-center rounded-full bg-primary-100">
+				@icon(iconName, "size-5")
+			</span>
+			{ label }
+		</a>
+	} else {
+		<a href={ templ.SafeURL(href) } class="flex flex-col items-center justify-center gap-1 text-xs font-medium text-gray-500 hover:text-gray-900">
+			<span class="flex h-7 w-14 items-center justify-center">
+				@icon(iconName, "size-5")
+			</span>
+			{ label }
+		</a>
+	}
+}
+
+// icon renders a symbol of an SVG sprite, e.g. icon("img/solid.svg#plus", "size-5").
+// It is filled with the text color.
+templ icon(name string, class string) {
+	<svg class={ class } aria-hidden="true" fill="currentColor">
+		<use href={ web.Asset(ctx, name) }></use>
+	</svg>
+}
+
+// image shows an uploaded image, or a placeholder icon if there is none.
+// class sets the size (and e.g. the rounding) of both.
+templ image(fileId sql.NullInt64, alt string, class string) {
+	@imageWithLoading(fileId, alt, class, "lazy")
+}
+
+// heroImage is an image that is visible right away (e.g. the big image of a meal);
+templ heroImage(fileId sql.NullInt64, alt string, class string) {
+	@imageWithLoading(fileId, alt, class, "eager")
+}
+
+templ imageWithLoading(fileId sql.NullInt64, alt string, class string, loading string) {
+	if fileId.Valid {
+		<img src={ fileURL(fileId) } alt={ alt } loading={ loading } decoding="async" class={ "object-cover", class }/>
+	} else {
+		@imagePlaceholder(class)
+	}
+}
+
+templ imagePlaceholder(class string) {
+	<div class={ "flex items-center justify-center bg-gray-100 text-gray-300", class }>
+		@icon("img/solid.svg#burger", "size-1/3 max-h-24 max-w-24")
+	</div>
+}
+
+// tagChip shows the name of a tag in its color.
+templ tagChip(tag meals.Tag) {
+	<span class="chip" style={ colorStyle("--tag-color", tag.Color) }>{ tag.Name }</span>
+}
+
+// filterSearch is the search field of a list filtered by filter.js (see there for the data
+// attributes of the list).
+templ filterSearch(label string) {
+	<div class="relative">
+		@icon("img/solid.svg#magnifying-glass", "pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-gray-400")
+		<input type="search" data-filter-search placeholder={ label } aria-label={ label } autocomplete="off" class="pl-9"/>
+	</div>
+}
+
+// filterEmpty is shown by filter.js if no item of the list matches.
+templ filterEmpty() {
+	<p data-filter-empty hidden class="py-10 text-center text-gray-500">Keine Gerichte gefunden</p>
+}
+
+// fab is the floating action button above the bottom navigation.
+templ fab(href string, iconName string, label string) {
+	<a href={ templ.SafeURL(href) } aria-label={ label } title={ label } class="fixed right-[max(1rem,calc((100vw-72rem)/2+1rem))] bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 flex size-14 items-center justify-center rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-700 print:hidden">
+		@icon(iconName, "size-6")
+	</a>
+}

@@ -1,14 +1,12 @@
 package views
 
 import (
-	"encoding/json"
 	"fmt"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"meal-planner/planner"
 	"meal-planner/wizard"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -45,23 +43,19 @@ func Wizard(ctx *core.WebContext) error {
 		date = date.AddDate(0, 0, 1)
 	}
 
-	return ctx.RenderTemplate(http.StatusOK, "wizard.html", core.TemplateData{
-		"week": map[string]any{
-			"start": week.Start,
-			"end":   week.End,
-			"days": func(days []*wizard.Day) []map[string]any {
-				result := make([]map[string]any, len(days))
-				for i, day := range days {
-					result[i] = map[string]any{
-						"weekday": day.Weekday,
-						"tags":    toSelectOptions(day.Tags, weekdayTagsConverter),
-					}
-				}
-				return result
-			}(week.Days),
-		},
-		"tags": toSelectOptions(tags, tagsConverter),
-	})
+	days := make([]wizardDay, len(week.Days))
+	for i, day := range week.Days {
+		selectedIds := make([]int64, len(day.Tags))
+		for j, tag := range day.Tags {
+			selectedIds[j] = tag.TagId
+		}
+		days[i] = wizardDay{
+			Weekday:   time.Weekday(day.Weekday),
+			TagSelect: newTagSelect(fmt.Sprintf("tags_%d", day.Weekday), tags, selectedIds),
+		}
+	}
+
+	return ctx.Render(http.StatusOK, wizardPage(offset, week.Start, week.End, days))
 }
 
 func Generate(ctx *core.WebContext) error {
@@ -85,27 +79,18 @@ func Generate(ctx *core.WebContext) error {
 		// get tags for weekday
 		weekdayTags := make([]*wizard.WeekdayTag, 0)
 
-		tagsJson := ctx.FormValue(fmt.Sprintf("tags_%d", weekday))
-		if tagsJson != "" {
-			var options []*SelectOption
-			err := json.Unmarshal([]byte(tagsJson), &options)
+		for _, id := range formTagIds(ctx, fmt.Sprintf("tags_%d", weekday)) {
+			tag, err := tagsRepo.GetTag(id)
 			if err != nil {
 				return err
 			}
-			for _, option := range options {
-				id, _ := strconv.ParseInt(option.Id, 10, 64)
-				tag, err := tagsRepo.GetTag(id)
-				if err != nil {
-					return err
-				}
 
-				weekdayTags = append(weekdayTags, &wizard.WeekdayTag{
-					Weekday:  weekday,
-					TagId:    tag.Id,
-					TagName:  tag.Name,
-					TagColor: tag.Color,
-				})
-			}
+			weekdayTags = append(weekdayTags, &wizard.WeekdayTag{
+				Weekday:  weekday,
+				TagId:    tag.Id,
+				TagName:  tag.Name,
+				TagColor: tag.Color,
+			})
 		}
 
 		// save new weekday-tags

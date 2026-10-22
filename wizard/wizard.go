@@ -2,7 +2,7 @@ package wizard
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
+	"log/slog"
 	"math/rand/v2"
 	"meal-planner/core"
 	"meal-planner/meals"
@@ -22,20 +22,9 @@ func NewWizard(c core.Context) *Wizard {
 }
 
 func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
-	allMealTags, err := w.mealsRepo.GetAllMealTags()
+	mealIdsWithTags, err := w.loadMealIdsWithTags()
 	if err != nil {
 		return nil, err
-	}
-
-	mealIdsWithTags := make(map[int64][]*meals.MealTag)
-	for _, tag := range allMealTags {
-		tagsOfMeal, exists := mealIdsWithTags[tag.MealId]
-		if !exists {
-			tagsOfMeal = make([]*meals.MealTag, 0)
-		}
-
-		tagsOfMeal = append(tagsOfMeal, tag)
-		mealIdsWithTags[tag.MealId] = tagsOfMeal
 	}
 
 	plannerWeek := &planner.Week{
@@ -48,13 +37,44 @@ func (w *Wizard) Generate(wizardWeek Week) (*planner.Week, error) {
 	for _, day := range wizardWeek.Days {
 		mod, err := w.getMealOfTheDay(day, mealIdsWithTags, plannerWeek.Meals)
 		if err != nil {
-			logrus.Warnf("could not find meal of the day: %v", err)
+			// the day keeps its current meal
+			slog.Warn("could not find meal of the day", "date", day.Date, "err", err)
+			continue
 		}
 
 		plannerWeek.Meals = append(plannerWeek.Meals, mod)
 	}
 
 	return plannerWeek, nil
+}
+
+// Reroll replaces the meal of the day by another random meal with the tags of the day.
+func (w *Wizard) Reroll(day *Day, plannedMeals []*planner.MealOfTheDay) (*planner.MealOfTheDay, error) {
+	mealIdsWithTags, err := w.loadMealIdsWithTags()
+	if err != nil {
+		return nil, err
+	}
+
+	mod, err := w.getMealOfTheDay(day, mealIdsWithTags, plannedMeals)
+	if err != nil && len(day.Tags) > 0 {
+		slog.Info("no other meal with the tags of the day, ignoring them", "date", day.Date, "err", err)
+		mod, err = w.getMealOfTheDay(&Day{Weekday: day.Weekday, Date: day.Date}, mealIdsWithTags, plannedMeals)
+	}
+	return mod, err
+}
+
+// loadMealIdsWithTags returns the tags of every meal that has tags, by meal id.
+func (w *Wizard) loadMealIdsWithTags() (map[int64][]*meals.MealTag, error) {
+	allMealTags, err := w.mealsRepo.GetAllMealTags()
+	if err != nil {
+		return nil, err
+	}
+
+	mealIdsWithTags := make(map[int64][]*meals.MealTag)
+	for _, tag := range allMealTags {
+		mealIdsWithTags[tag.MealId] = append(mealIdsWithTags[tag.MealId], tag)
+	}
+	return mealIdsWithTags, nil
 }
 
 func (w *Wizard) getMealOfTheDay(day *Day, mealIdsWithTags map[int64][]*meals.MealTag, alreadyPickedMeals []*planner.MealOfTheDay) (*planner.MealOfTheDay, error) {

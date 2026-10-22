@@ -1,0 +1,49 @@
+[tools]
+go = "1.27"
+"github:tailwindlabs/tailwindcss" = "4.3.3"
+staticcheck = "2026.2.2"
+
+[tasks.css]
+description = "Build the CSS (Tailwind)"
+run = "tailwindcss -i web/styles/main.css -o web/static/main.css --minify"
+
+[tasks.templ]
+description = "Generate Go code from the templ templates"
+run = "go tool templ generate"
+
+[tasks.build]
+description = "Build the Go binary"
+depends = ["css", "templ"]
+env = { CGO_ENABLED = "1" }
+run = "go build -mod=vendor -o meal-planner"
+
+[tasks.test]
+description = "Run the Go tests"
+depends = ["templ"]
+env = { CGO_ENABLED = "1" }
+run = "go test -mod=vendor ./..."
+
+[tasks.lint]
+description = "Run go vet and staticcheck"
+depends = ["templ"]
+env = { CGO_ENABLED = "1" }
+run = ["go vet -mod=vendor ./...", "staticcheck ./..."]
+
+[tasks."dev:css"]
+description = "Rebuild the CSS on changes"
+run = "tailwindcss -i web/styles/main.css -o web/static/main.css --watch=always"
+
+[tasks."dev:server"]
+description = "Regenerate templates, restart the Go server and reload the browser on changes"
+env = { CGO_ENABLED = "1", STATIC_DIR = "web/static" }
+run = """
+go tool templ generate --watch \
+  --watch-pattern '(.+\\.go$)|(.+\\.templ$)|(.+_templ\\.txt$)|(web/static/.+\\.(css|js)$)' \
+  --ignore-pattern '^vendor/' \
+  --cmd 'go run -mod=vendor .' \
+  --proxy http://localhost:8080 --open-browser=false
+"""
+
+[tasks.dev]
+description = "Start the dev server with live reload (http://localhost:7331/meal-planner)"
+depends = ["dev:css", "dev:server"]

@@ -1,26 +1,29 @@
 package core
 
 import (
+	"database/sql"
+	"errors"
 	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"github.com/lmittmann/tint"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/sirupsen/logrus"
 	"io/fs"
+	"log/slog"
+	"meal-planner/migrations"
 	"net/http"
 	"os"
+	"strings"
+	"time"
 )
 
-func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
-	formatter := &logrus.TextFormatter{}
-	formatter.ForceColors = true
-	formatter.FullTimestamp = true
-	formatter.TimestampFormat = "2006-01-02 15:04:05"
-	logrus.SetFormatter(formatter)
-	logrus.SetOutput(os.Stdout)
-	logrus.SetLevel(logrus.InfoLevel)
-
+// InitApp creates the app from the environment: configuration, logging, database and migrations.
+func InitApp() *App {
 	conf := LoadConfiguration()
+
+	slog.SetDefault(slog.New(tint.NewTextHandler(os.Stdout, &tint.Options{
+		Level:      conf.LogLevel,
+		TimeFormat: time.DateTime,
+		NoColor:    !isTerminal(os.Stdout),
+	})))
 
 	// this connects & tries a simple 'SELECT 1', panics on error
 	// use sqlx.Open() for sql.Open() semantics
@@ -29,80 +32,143 @@ func InitApp(rendererFactory CreateRendererFunc, migrationsFs fs.FS) *App {
 		panic(err)
 	}
 
-	if err := runMigrations(db.DB, migrationsFs); err != nil {
+	if err := migrations.Up(db.DB); err != nil {
 		panic(err)
 	}
 
+	return NewApp(conf, db)
+}
+
+// NewApp creates an app without routes for an already migrated database.
+func NewApp(conf AppConfig, db *sqlx.DB) *App {
 	ctx := &Ctx{config: &conf, db: db}
-	renderer, err := rendererFactory(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	e := echo.New()
-	e.Debug = true
-	//e.Logger.SetLevel(log.DEBUG)
-	//e.Use(middleware.Logger())
-	e.Use(middleware.CORS())
-	e.Use(CreateCtx(ctx, renderer))
-
-	return &App{Echo: e, Ctx: ctx}
+	return &App{mux: http.NewServeMux(), Ctx: ctx}
 }
 
 type App struct {
-	*echo.Echo
-	Ctx *Ctx
+	mux         *http.ServeMux
+	middlewares []func(http.Handler) http.Handler
+	Ctx         *Ctx
+}
+
+// Use adds a middleware that wraps all routes, in the order of the calls.
+func (a *App) Use(middleware func(http.Handler) http.Handler) {
+	a.middlewares = append(a.middlewares, middleware)
+}
+
+// Handler returns all registered routes wrapped in the middlewares.
+func (a *App) Handler() http.Handler {
+	var handler http.Handler = a.mux
+	for i := len(a.middlewares) - 1; i >= 0; i-- {
+		handler = a.middlewares[i](handler)
+	}
+	return logRequests(handler)
+}
+
+// Start listens on addr and serves all registered routes.
+func (a *App) Start(addr string) error {
+	slog.Info("http server started", "addr", addr)
+	return http.ListenAndServe(addr, a.Handler())
+}
+
+func (a *App) Group(prefix string) *Group {
+	prefix = strings.TrimSuffix(prefix, "/")
+	if prefix != "" {
+		// the group root without trailing slash, e.g. /meal-planner -> /meal-planner/
+		a.mux.Handle("GET "+prefix, http.RedirectHandler(prefix+"/", http.StatusMovedPermanently))
+	}
+	return &Group{app: a, prefix: prefix}
 }
 
 type HandlerFunc func(*WebContext) error
 
-func (f HandlerFunc) Handle(ctx *WebContext) error {
-	return f(ctx)
-}
-func wrapHandler(h HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		ctx := c.(*WebContext)
-		return h.Handle(ctx)
-	}
-}
-
-func (a *App) GET(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return a.Add(http.MethodGet, path, wrapHandler(h), m...)
-}
-
-func (a *App) POST(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return a.Add(http.MethodPost, path, wrapHandler(h), m...)
-}
-
-func (a *App) PUT(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return a.Add(http.MethodPut, path, wrapHandler(h), m...)
-}
-
-func (a *App) DELETE(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return a.Add(http.MethodPut, path, wrapHandler(h), m...)
-}
-
-func (a *App) Group(prefix string, m ...echo.MiddlewareFunc) *Group {
-	g := a.Echo.Group(prefix, m...)
-	return &Group{Group: g}
-}
-
 type Group struct {
-	*echo.Group
+	app    *App
+	prefix string
 }
 
-func (g *Group) GET(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return g.Add(http.MethodGet, path, wrapHandler(h), m...)
+func (g *Group) pattern(method string, path string) string {
+	if path == "/" {
+		// match only the root itself, not everything below it
+		path = "/{$}"
+	}
+	return method + " " + g.prefix + path
 }
 
-func (g *Group) POST(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return g.Add(http.MethodPost, path, wrapHandler(h), m...)
+func (g *Group) handle(method string, path string, h HandlerFunc) {
+	g.app.mux.HandleFunc(g.pattern(method, path), func(w http.ResponseWriter, r *http.Request) {
+		ctx := &WebContext{Ctx: g.app.Ctx, w: w, r: r}
+		if err := h(ctx); err != nil {
+			handleError(w, r, err)
+		}
+	})
 }
 
-func (g *Group) PUT(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return g.Add(http.MethodPut, path, wrapHandler(h), m...)
+func (g *Group) GET(path string, h HandlerFunc) {
+	g.handle(http.MethodGet, path, h)
 }
 
-func (g *Group) DELETE(path string, h HandlerFunc, m ...echo.MiddlewareFunc) *echo.Route {
-	return g.Add(http.MethodPut, path, wrapHandler(h), m...)
+func (g *Group) POST(path string, h HandlerFunc) {
+	g.handle(http.MethodPost, path, h)
+}
+
+func (g *Group) PUT(path string, h HandlerFunc) {
+	g.handle(http.MethodPut, path, h)
+}
+
+func (g *Group) DELETE(path string, h HandlerFunc) {
+	g.handle(http.MethodDelete, path, h)
+}
+
+// Static serves the files of fsys under path, without directory listings.
+// Requests with a version (?v=...) may be cached forever, all others are revalidated.
+func (g *Group) Static(path string, fsys fs.FS) {
+	prefix := g.prefix + strings.TrimSuffix(path, "/") + "/"
+	fileServer := http.StripPrefix(prefix, http.FileServerFS(fsys))
+	g.app.mux.Handle("GET "+prefix, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") {
+			http.NotFound(w, r)
+			return
+		}
+		if r.URL.Query().Has("v") {
+			w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		} else {
+			w.Header().Set("Cache-Control", "no-cache")
+		}
+		fileServer.ServeHTTP(w, r)
+	}))
+}
+
+func handleError(w http.ResponseWriter, r *http.Request, err error) {
+	if errors.Is(err, sql.ErrNoRows) {
+		http.NotFound(w, r)
+		return
+	}
+	slog.Error("request failed", "method", r.Method, "path", r.URL.Path, "err", err)
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(status int) {
+	r.status = status
+	r.ResponseWriter.WriteHeader(status)
+}
+
+func logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &statusRecorder{ResponseWriter: w, status: http.StatusOK}
+		next.ServeHTTP(rec, r)
+		slog.Info(r.Method+" "+r.URL.Path, "status", rec.status, "duration", time.Since(start).Round(time.Microsecond))
+	})
+}
+
+// isTerminal reports whether f is an interactive terminal, so colors are only used there.
+func isTerminal(f *os.File) bool {
+	info, err := f.Stat()
+	return err == nil && info.Mode()&os.ModeCharDevice != 0
 }

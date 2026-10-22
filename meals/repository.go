@@ -50,9 +50,21 @@ func (r *Repository) GetMeals() ([]*Meal, error) {
 	return meals, err
 }
 
+// DeleteMeal deletes the meal together with its tag assignments.
 func (r *Repository) DeleteMeal(id int64) error {
-	_, err := r.db.Exec("DELETE FROM meals WHERE id=$1", id)
-	return err
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	if _, err := tx.Exec("DELETE FROM meal_tags WHERE meal_id=$1", id); err != nil {
+		return err
+	}
+	if _, err := tx.Exec("DELETE FROM meals WHERE id=$1", id); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (r *Repository) GetTags() ([]*Tag, error) {

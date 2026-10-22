@@ -1,0 +1,15 @@
+package views
+
+import "strconv"
+
+// tagSelectInput shows one checkbox chip per tag, see TagSelect.
+templ tagSelectInput(tagSelect TagSelect) {
+	<div class="tag-select">
+		for _, option := range tagSelect.Options {
+			<label style={ colorStyle("--tag-color", option.Color) }>
+				<input type="checkbox" name={ tagSelect.Name } value={ strconv.FormatInt(option.Id, 10) } checked?={ option.Selected }/>
+				<span>{ option.Name }</span>
+			</label>
+		}
+	</div>
+}

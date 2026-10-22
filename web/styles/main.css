@@ -1,0 +1,120 @@
+@import "tailwindcss" source(none);
+/* vendored Trix editor styles, layered so that utilities can override them */
+@import "./trix.css" layer(components);
+
+@plugin "@tailwindcss/typography";
+
+@source "../views/*.templ";
+@source "../static/*.js";
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --color-primary-50: #f0f8fd;
+  --color-primary-100: #dbeffa;
+  --color-primary: #086699;
+  --color-primary-700: #075580;
+  --color-primary-800: #064563;
+}
+
+/* element styles live in the base layer so utilities can override them */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  input:where([type="text"], [type="search"], [type="number"], :not([type])),
+  textarea,
+  select {
+    @apply block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-900 shadow-xs placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/25 focus:outline-none;
+  }
+}
+
+/* after trix.css in the same layer, so these win */
+@layer components {
+  /* wrap instead of cutting off the buttons on small screens */
+  trix-toolbar .trix-button-row {
+    @apply flex-wrap gap-x-2;
+  }
+
+  trix-toolbar .trix-button-group:not(:first-child) {
+    @apply ml-0;
+  }
+
+  trix-toolbar .trix-button-group {
+    @apply rounded-lg border-gray-300 bg-white;
+  }
+
+  trix-editor {
+    @apply min-h-48 rounded-lg border-gray-300 bg-white px-3 py-2 shadow-xs focus:border-primary focus:ring-2 focus:ring-primary/25;
+  }
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary;
+}
+
+@utility btn-primary {
+  @apply btn bg-primary text-white shadow-sm hover:bg-primary-700;
+}
+
+@utility btn-secondary {
+  @apply btn bg-white text-gray-700 shadow-xs ring-1 ring-gray-300 ring-inset hover:bg-gray-50;
+}
+
+@utility btn-danger {
+  @apply btn bg-white text-red-600 shadow-xs ring-1 ring-red-200 ring-inset hover:bg-red-50;
+}
+
+/* round button that only contains an icon */
+@utility btn-icon {
+  @apply inline-flex size-10 shrink-0 items-center justify-center rounded-full text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-primary;
+}
+
+@utility card {
+  @apply rounded-xl bg-white shadow-sm ring-1 ring-gray-900/5;
+}
+
+@utility form-label {
+  @apply mb-1 block text-sm font-medium text-gray-700;
+}
+
+/* a tag: tinted with --tag-color so the text stays readable for light and dark colors */
+@utility chip {
+  @apply inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium text-gray-800;
+  background-color: color-mix(in srgb, var(--tag-color, var(--color-gray-400)) 22%, white);
+
+  &::before {
+    content: "";
+    @apply size-1.5 shrink-0 rounded-full;
+    background-color: var(--tag-color, var(--color-gray-400));
+  }
+}
+
+@utility tag-select {
+  /* tag chips backed by checkboxes, see web/views/tagselect.templ */
+  @apply flex flex-wrap gap-2;
+
+  & input {
+    @apply sr-only;
+  }
+
+  & span {
+    @apply inline-block cursor-pointer rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-700 transition-colors select-none hover:bg-gray-50;
+  }
+
+  & input:checked + span {
+    @apply font-medium text-gray-900;
+    border-color: var(--tag-color, var(--color-primary));
+    background-color: color-mix(in srgb, var(--tag-color, var(--color-primary)) 30%, white);
+  }
+
+  & input:checked + span::before {
+    content: "✓ ";
+  }
+
+  & input:focus-visible + span {
+    @apply ring-2 ring-primary/40;
+  }
+}

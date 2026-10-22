@@ -1,2 +1,7 @@
 /meal-planner.sqlite
-/web/assets/node_modules
+/meal-planner
+/web/static/main.css
+/web/**/*_templ.go
+/web/**/*_templ.txt
+.git
+.idea

@@ -1,0 +1,53 @@
+package views
+
+import (
+	"fmt"
+	"meal-planner/meals"
+	"strconv"
+)
+
+templ tagsPage(tags []*meals.Tag) {
+	@layout() {
+		<form class="flex gap-2" action="tags" method="post">
+			<input type="text" name="name" placeholder="Neuer Tag" aria-label="Neuer Tag" class="min-w-0 flex-1"/>
+			<button type="submit" class="btn-primary shrink-0">
+				@icon("img/solid.svg#plus", "size-4")
+				Hinzufügen
+			</button>
+		</form>
+		<div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+			for i, tag := range tags {
+				@tagCard(fmt.Sprintf("tag-%d", i), tag)
+			}
+		</div>
+	}
+}
+
+templ tagCard(id string, tag *meals.Tag) {
+	<div class="card overflow-hidden border-l-[6px] border-gray-300" style={ colorStyle("border-left-color", tag.Color) } id={ id }>
+		<div class="flex items-center gap-2 py-1.5 pr-1.5 pl-3">
+			<span class="flex-1 truncate font-semibold text-gray-900">{ tag.Name }</span>
+			<button type="button" class="btn-icon" aria-label="Bearbeiten" data-toggle={ "#" + id + " form" }>
+				@icon("img/regular.svg#pen-to-square", "size-4")
+			</button>
+		</div>
+		<form class="hidden space-y-3 border-t border-gray-100 p-3" action={ templ.SafeURL("tags/" + strconv.FormatInt(tag.Id, 10)) } method="post">
+			<div>
+				<label class="form-label" for={ id + "-name" }>Name</label>
+				<input type="text" id={ id + "-name" } name="name" value={ tag.Name }/>
+			</div>
+			<div>
+				<label class="form-label" for={ id + "-color" }>Farbe</label>
+				<input type="color" id={ id + "-color" } name="color" value={ tag.Color } class="h-10 w-20 cursor-pointer rounded-lg border border-gray-300 bg-white p-1"/>
+			</div>
+			<div class="flex justify-end gap-2">
+				<button type="button" class="btn-secondary" data-toggle={ "#" + id + " form" }>
+					Abbrechen
+				</button>
+				<button type="submit" class="btn-primary">
+					Speichern
+				</button>
+			</div>
+		</form>
+	</div>
+}

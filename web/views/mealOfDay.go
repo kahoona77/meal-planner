@@ -2,11 +2,15 @@ package views
 
 import (
 	"database/sql"
+	"log/slog"
 	"meal-planner/core"
 	"meal-planner/meals"
 	"meal-planner/planner"
+	"meal-planner/wizard"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func MealOfDay(ctx *core.WebContext) error {
@@ -26,7 +30,15 @@ func MealOfDay(ctx *core.WebContext) error {
 		}
 	}
 
-	return ctx.RenderTemplate(http.StatusOK, "meal-of-day.html", core.TemplateData{"mod": mealOfDay})
+	var tags []*meals.MealTag
+	if mealOfDay.Meal.Id > 0 {
+		tags, err = mealsRepo.GetMealTags(mealOfDay.Meal.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	return ctx.Render(http.StatusOK, mealOfDayPage(mealOfDay, tags))
 }
 
 func SelectMealOfDayView(ctx *core.WebContext) error {
@@ -44,12 +56,7 @@ func SelectMealOfDayView(ctx *core.WebContext) error {
 		return err
 	}
 
-	data := core.TemplateData{
-		"mealOfDay": mealOfDay,
-		"meals":     allMeals,
-	}
-
-	return ctx.RenderTemplate(http.StatusOK, "meal-of-day-select.html", data)
+	return ctx.Render(http.StatusOK, selectMealOfDayPage(mealOfDay, allMeals))
 }
 
 func SelectMealOfDay(ctx *core.WebContext) error {
@@ -74,4 +81,39 @@ func SelectMealOfDay(ctx *core.WebContext) error {
 	}
 
 	return ctx.Redirect(http.StatusFound, "/")
+}
+
+// RerollMealOfDay replaces the meal of a day by another random one, or picks one for a day
+// without a meal.
+func RerollMealOfDay(ctx *core.WebContext) error {
+	repo := planner.NewRepository(ctx)
+
+	id := ctx.Param("id")
+	if _, err := time.Parse(planner.MealOfDayDateFormat, id); err != nil {
+		// not a day: 404
+		return sql.ErrNoRows
+	}
+	mealOfDay := planner.NewMealFromId(id)
+
+	mealsOfWeek, err := repo.GetMealsOfDay(planner.GetStartWeek(mealOfDay.Date), planner.GetEndWeek(mealOfDay.Date))
+	if err != nil {
+		return err
+	}
+	for _, mod := range mealsOfWeek {
+		mod.Meal = &meals.Meal{Id: mod.MealId.Int64}
+	}
+
+	weekdayTags, err := wizard.NewRepository(ctx).GetWeekdayTags()
+	if err != nil {
+		return err
+	}
+	weekday := int(mealOfDay.Date.Weekday())
+	day := &wizard.Day{Weekday: weekday, Date: mealOfDay.Date, Tags: getWeekdayTags(weekday, weekdayTags)}
+
+	if _, err := wizard.NewWizard(ctx).Reroll(day, mealsOfWeek); err != nil {
+		// e.g. every meal is planned this week already: the day keeps its meal
+		slog.Warn("could not reroll the meal of the day", "id", mealOfDay.Id, "err", err)
+	}
+
+	return ctx.Redirect(http.StatusFound, "/"+strings.TrimPrefix(weekURL(mealOfDay.Date), "./"))
 }

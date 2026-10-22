@@ -14,8 +14,6 @@ func NewRepository(c core.Context) *Repository {
 	return &Repository{db: c.Db()}
 }
 
-const mealsInsert = `INSERT INTO meals_of_day (id, date, meal_id) VALUES (:id, :date, :meal_id)`
-
 const mealsUpsert = `INSERT INTO meals_of_day (id, date, meal_id) VALUES (:id, :date, :meal_id) ON CONFLICT (id) DO UPDATE SET date=:date, meal_id=:meal_id WHERE id = :id`
 
 func (r *Repository) UpsertMealOfDay(meal *MealOfTheDay) error {

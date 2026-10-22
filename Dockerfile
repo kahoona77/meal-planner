@@ -1,22 +1,22 @@
-FROM node:18-alpine AS frontendBuilder
-COPY web/ /web/
-WORKDIR /web/assets
-RUN npm install
-RUN npm run build
-
-FROM golang:1.22-alpine AS builder
+FROM golang:1.27-alpine AS builder
+# keep in sync with mise.toml
+ARG TAILWIND_VERSION=4.3.3
+ARG STATICCHECK_VERSION=2026.2.2
 RUN apk add --no-cache gcc musl-dev
+ADD --chmod=755 https://github.com/tailwindlabs/tailwindcss/releases/download/v${TAILWIND_VERSION}/tailwindcss-linux-x64-musl /usr/local/bin/tailwindcss
+ADD https://github.com/dominikh/go-tools/releases/download/${STATICCHECK_VERSION}/staticcheck_linux_amd64.tar.gz /tmp/staticcheck.tar.gz
+RUN tar -xzf /tmp/staticcheck.tar.gz -C /usr/local/bin --strip-components=1 staticcheck/staticcheck && rm /tmp/staticcheck.tar.gz
 WORKDIR /go/src/app
 COPY . .
+RUN tailwindcss -i web/styles/main.css -o web/static/main.css --minify
+RUN go tool templ generate
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=1 go build -mod=vendor -ldflags '-linkmode external -extldflags "-static"' -o meal-planner
+RUN go vet ./... && staticcheck ./...
 RUN go test -mod=vendor -v ./...
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
-COPY web/tmpl/ /app/web/tmpl/
-COPY web/assets/ /app/web/assets/
-COPY --from=frontendBuilder /web/assets/dist/ /app/web/assets/dist/
 COPY --from=builder /go/src/app/meal-planner /app/
 
 ENTRYPOINT ["/app/meal-planner"]
